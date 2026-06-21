@@ -2,22 +2,37 @@
 
 OpenCut-ZHS 是一个面向中文用户的 OpenCut Classic 维护分支，提供默认简体中文界面、持续补齐的站点与编辑器汉化，以及基础可回归的 Web 端测试。
 
-## 项目定位
+OpenCut-ZHS is a Chinese-focused maintenance fork of OpenCut Classic with Simplified Chinese as the default UI, ongoing localization for the website and editor, and baseline Web regression coverage.
+
+## 项目定位 | Positioning
 
 - 默认语言为简体中文，优先优化中文用户的上手体验
 - 保留 OpenCut Classic 的 Web 编辑能力与现有工程结构
 - 持续补齐可见文案、交互提示和关键页面的中文化
 - 为主要页面与编辑器链路补充 Playwright e2e 回归
+- Simplified Chinese is the default language, with priority on Chinese-first usability
+- The existing OpenCut Classic Web editing flow and project structure stay intact
+- Visible copy, interaction hints, and key pages continue to be localized
+- Playwright e2e coverage is added for core pages and editor flows
 
-## 上游关系
+## 原仓库 | Original Repository
 
-本仓库基于原始 `OpenCut-classic` 代码库继续维护。上游原仓库已经归档，原始重写版本位于 [opencut-app/opencut](https://github.com/opencut-app/opencut)。
+本仓库基于原始 `OpenCut-classic` 代码库继续维护。原仓库地址为 [OpenCut-app/OpenCut-classic](https://github.com/OpenCut-app/OpenCut-classic)，当前已经归档。
 
-## 当前状态
+This repository continues from the original [OpenCut-app/OpenCut-classic](https://github.com/OpenCut-app/OpenCut-classic) codebase, which is now archived.
+
+上游重写版本位于 [opencut-app/opencut](https://github.com/opencut-app/opencut)。
+
+The upstream rewrite is happening at [opencut-app/opencut](https://github.com/opencut-app/opencut).
+
+## 当前状态 | Current Status
 
 - 适合用于中文界面的本地预览、演示和继续迭代
 - 当前重点在 Web 端中文体验、基础稳定性和可回归测试
 - 桌面端与底层 Rust 迁移仍沿用上游项目的原有方向
+- Suitable for local preview, demos, and continued iteration with a Chinese UI
+- Current work focuses on Web localization quality, baseline stability, and regression testing
+- Desktop work and the lower-level Rust migration continue along the upstream direction
 
 ## Sponsors
 
