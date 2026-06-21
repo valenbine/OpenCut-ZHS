@@ -1,8 +1,23 @@
-# OpenCut (Legacy)
+# OpenCut-ZHS
 
-This is the original OpenCut codebase. It's archived and no longer maintained.
+OpenCut-ZHS 是一个面向中文用户的 OpenCut Classic 维护分支，提供默认简体中文界面、持续补齐的站点与编辑器汉化，以及基础可回归的 Web 端测试。
 
-The rewrite is happening at [opencut-app/opencut](https://github.com/opencut-app/opencut).
+## 项目定位
+
+- 默认语言为简体中文，优先优化中文用户的上手体验
+- 保留 OpenCut Classic 的 Web 编辑能力与现有工程结构
+- 持续补齐可见文案、交互提示和关键页面的中文化
+- 为主要页面与编辑器链路补充 Playwright e2e 回归
+
+## 上游关系
+
+本仓库基于原始 `OpenCut-classic` 代码库继续维护。上游原仓库已经归档，原始重写版本位于 [opencut-app/opencut](https://github.com/opencut-app/opencut)。
+
+## 当前状态
+
+- 适合用于中文界面的本地预览、演示和继续迭代
+- 当前重点在 Web 端中文体验、基础稳定性和可回归测试
+- 桌面端与底层 Rust 迁移仍沿用上游项目的原有方向
 
 ## Sponsors
 
@@ -159,4 +174,3 @@ See our [Contributing Guide](.github/CONTRIBUTING.md) for detailed setup instruc
 ---
 
 ![Star History Chart](https://api.star-history.com/svg?repos=opencut-app/opencut&type=Date)
-
