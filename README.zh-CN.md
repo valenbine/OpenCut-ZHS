@@ -2,6 +2,8 @@
 
 # OpenCut-ZHS
 
+> 中文说明页，English documentation is available in [README.md](./README.md).
+
 OpenCut-ZHS 是一个面向中文用户的 OpenCut Classic 维护分支，提供默认简体中文界面、持续补齐的站点与编辑器汉化，以及基础可回归的 Web 端测试。
 
 ## 项目定位
