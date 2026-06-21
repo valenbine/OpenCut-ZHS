@@ -52,12 +52,16 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
 - **Free core features / 核心功能免费可用**: Most basic CapCut features are now paywalled, while a lightweight editor still covers common editing needs.
 - **Simple workflow / 简单易上手**: People want editors that are easy to use, and a familiar workflow lowers the learning curve.
 
-## Project Structure
+## Project Structure | 项目结构
 
-- `apps/web/`: Next.js web application
-- `apps/desktop/`: Native desktop app built with GPUI (in progress)
-- `rust/`: Platform-agnostic core: GPU compositor, effects, masks, and WASM bindings. We're actively migrating business logic here from TypeScript.
+- `apps/web/`: Next.js web application for the browser-based editor and website
+- `apps/web/`：基于 Next.js 的 Web 应用，承载官网和浏览器编辑器
+- `apps/desktop/`: Native desktop app built with GPUI, currently still in progress
+- `apps/desktop/`：基于 GPUI 的原生桌面端，当前仍在持续建设中
+- `rust/`: Platform-agnostic core including the GPU compositor, effects, masks, and WASM bindings. Business logic is gradually moving here from TypeScript
+- `rust/`：平台无关的核心层，包含 GPU 合成器、特效、蒙版和 WASM 绑定，业务逻辑正逐步从 TypeScript 迁移到这里
 - `docs/`: Architecture and subsystem documentation
+- `docs/`：架构设计与各子系统文档
 
 ## Getting Started | 快速开始
 
