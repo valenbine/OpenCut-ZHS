@@ -34,9 +34,11 @@ The upstream rewrite is happening at [opencut-app/opencut](https://github.com/op
 - Current work focuses on Web localization quality, baseline stability, and regression testing
 - Desktop work and the lower-level Rust migration continue along the upstream direction
 
-## Sponsors
+## Sponsors | 赞助支持
 
-Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss) and [fal.ai](https://fal.ai?utm_source=github-opencut&utm_campaign=oss) for their support of open-source software.
+Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss) and [fal.ai](https://fal.ai?utm_source=github-opencut&utm_campaign=oss) for supporting open-source software.
+
+感谢 [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss) 和 [fal.ai](https://fal.ai?utm_source=github-opencut&utm_campaign=oss) 对开源软件项目的支持。
 
 <a href="https://vercel.com/oss">
   <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
@@ -244,10 +246,14 @@ See the [Contributing Guide](.github/CONTRIBUTING.md) for detailed setup instruc
 - 如果你要修改 `apps/desktop`，请先阅读 [`apps/desktop/README.md`](apps/desktop/README.md)
 - 创建功能分支并提交 PR
 
-## License
+## License | 许可证
 
-[MIT LICENSE](LICENSE)
+This project is released under the [MIT License](LICENSE).
+
+本项目基于 [MIT License](LICENSE) 发布。
 
 ---
+
+## Star History | Star 历史
 
 ![Star History Chart](https://api.star-history.com/svg?repos=opencut-app/opencut&type=Date)
