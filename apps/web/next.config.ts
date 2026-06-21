@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
+	allowedDevOrigins: ["*.monkeycode-ai.online"],
 	reactStrictMode: true,
 	productionBrowserSourceMaps: true,
 	output: "standalone",

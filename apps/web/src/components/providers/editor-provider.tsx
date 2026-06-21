@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/i18n/language-provider";
 import { EditorCore } from "@/core";
 import { useEditor } from "@/editor/use-editor";
 import { useKeybindingsListener } from "@/actions/use-keybindings";
@@ -22,6 +23,7 @@ interface EditorProviderProps {
 
 export function EditorProvider({ projectId, children }: EditorProviderProps) {
 	const activeProject = useEditor((e) => e.project.getActiveOrNull());
+	const { copy } = useI18n();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -57,11 +59,11 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 				if (isNotFound) {
 					try {
 						const newProjectId = await editor.project.createNewProject({
-							name: "Untitled Project",
+							name: copy.common.untitledProject,
 						});
 						router.replace(`/editor/${newProjectId}`);
 					} catch (_createErr) {
-						setError("Failed to create project");
+						setError(copy.common.createProjectFailed);
 						setIsLoading(false);
 					}
 				} else {
@@ -72,7 +74,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 						setError(wasmPanic);
 					} else {
 						setError(
-							err instanceof Error ? err.message : "Failed to load project",
+							err instanceof Error ? err.message : copy.common.loadProjectFailed,
 						);
 					}
 					setIsLoading(false);
@@ -102,7 +104,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
 					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Loading project...</p>
+					<p className="text-muted-foreground text-sm">{copy.common.loadingProject}</p>
 				</div>
 			</div>
 		);
@@ -113,7 +115,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
 					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Exiting project...</p>
+					<p className="text-muted-foreground text-sm">{copy.common.exitingProject}</p>
 				</div>
 			</div>
 		);
@@ -134,14 +136,14 @@ function EditorRuntimeBindings() {
 	);
 
 	useEffect(() => {
-		editor.command.isRippleEnabled = rippleEditingEnabled;
-	}, [editor, rippleEditingEnabled]);
+		EditorCore.getInstance().command.isRippleEnabled = rippleEditingEnabled;
+	}, [rippleEditingEnabled]);
 
 	useEffect(() => {
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (!editor.save.getIsDirty()) return;
 			event.preventDefault();
-			(event as unknown as { returnValue: string }).returnValue = "";
+			Reflect.set(event, "returnValue", "");
 		};
 
 		window.addEventListener("beforeunload", handleBeforeUnload);

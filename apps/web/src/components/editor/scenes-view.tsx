@@ -24,13 +24,48 @@ import {
 import { canDeleteScene, getMainScene } from "@/timeline/scenes";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 
 export function ScenesView({ children }: { children: React.ReactNode }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const scenes = editor.scenes.getScenes();
 	const currentScene = editor.scenes.getActiveScene();
 	const [isSelectMode, setIsSelectMode] = useState(false);
 	const [selectedScenes, setSelectedScenes] = useState<Set<string>>(new Set());
+	const copy = {
+		"zh-CN": {
+			title: "场景",
+			selectTitle: (count: number) => `选择场景（${count}）`,
+			selectDescription: "选择要删除的场景",
+			defaultDescription: "在项目中的不同场景之间切换",
+			cancel: "取消",
+			select: "选择",
+			delete: (count: number) => `删除（${count}）`,
+			empty: "暂无场景",
+			deleteFailed: "删除场景失败",
+			deleteTitle: "删除场景",
+			deleteDescription: (count: number) =>
+				`确定要删除 ${count} 个场景吗？此操作无法撤销。`,
+		},
+		en: {
+			title: "Scenes",
+			selectTitle: (count: number) => `Select scenes (${count})`,
+			selectDescription: "Select scenes to delete",
+			defaultDescription: "Switch between scenes in your project",
+			cancel: "Cancel",
+			select: "Select",
+			delete: (count: number) => `Delete (${count})`,
+			empty: "No scenes available",
+			deleteFailed: "Failed to delete scene",
+			deleteTitle: "Delete Scenes",
+			deleteDescription: (count: number) =>
+				`Are you sure you want to delete ${count} scene${count === 1 ? "" : "s"}? This action cannot be undone.`,
+		},
+	}[locale];
+
+	const getSceneLabel = ({ name }: { name: string }) =>
+		locale === "zh-CN" && name === "Main Scene" ? "主场景" : name;
 
 	const handleSceneSwitch = async (sceneId: string) => {
 		if (isSelectMode) {
@@ -71,7 +106,11 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 
 			const { canDelete, reason } = canDeleteScene({ scene });
 			if (!canDelete) {
-				toast.error(reason || "Failed to delete scene");
+				toast.error(
+					reason === "Cannot delete main scene" && locale === "zh-CN"
+						? "不能删除主场景"
+						: reason || copy.deleteFailed,
+				);
 				continue;
 			}
 
@@ -96,12 +135,10 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 			<SheetContent>
 				<SheetHeader>
 					<SheetTitle>
-						{isSelectMode ? `Select scenes (${selectedScenes.size})` : "Scenes"}
+						{isSelectMode ? copy.selectTitle(selectedScenes.size) : copy.title}
 					</SheetTitle>
 					<SheetDescription>
-						{isSelectMode
-							? "Select scenes to delete"
-							: "Switch between scenes in your project"}
+						{isSelectMode ? copy.selectDescription : copy.defaultDescription}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="flex flex-col gap-4 py-4">
@@ -113,7 +150,7 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 							onClick={handleSelectMode}
 						>
 							<ListCheck />
-							{isSelectMode ? "Cancel" : "Select"}
+							{isSelectMode ? copy.cancel : copy.select}
 						</Button>
 						{isSelectMode && (
 							<DeleteDialog
@@ -128,16 +165,14 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 										size="sm"
 									>
 										<Trash2 />
-										Delete ({selectedScenes.size})
+										{copy.delete(selectedScenes.size)}
 									</Button>
 								}
 							/>
 						)}
 					</div>
 					{scenes.length === 0 ? (
-						<div className="text-muted-foreground text-sm">
-							No scenes available
-						</div>
+						<div className="text-muted-foreground text-sm">{copy.empty}</div>
 					) : (
 						<div className="space-y-2">
 							{scenes.map((scene) => (
@@ -155,7 +190,7 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 									)}
 									onClick={() => handleSceneSwitch(scene.id)}
 								>
-									<span>{scene.name}</span>
+									<span>{getSceneLabel({ name: scene.name })}</span>
 									<div className="flex items-center gap-2">
 										{((isSelectMode && selectedScenes.has(scene.id)) ||
 											(!isSelectMode && currentScene?.id === scene.id)) && (
@@ -184,6 +219,21 @@ function DeleteDialog({
 	trigger: React.ReactNode;
 }) {
 	const [open, setOpen] = useState(false);
+	const { locale } = useI18n();
+	const copy = {
+		"zh-CN": {
+			title: "删除场景",
+			description: `确定要删除 ${count} 个场景吗？此操作无法撤销。`,
+			cancel: "取消",
+			confirm: "删除",
+		},
+		en: {
+			title: "Delete Scenes",
+			description: `Are you sure you want to delete ${count} scene${count === 1 ? "" : "s"}? This action cannot be undone.`,
+			cancel: "Cancel",
+			confirm: "Delete",
+		},
+	}[locale];
 
 	const handleDelete = () => {
 		onDelete();
@@ -195,22 +245,19 @@ function DeleteDialog({
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Delete Scenes</DialogTitle>
-					<DialogDescription>
-						Are you sure you want to delete {count} scene
-						{count === 1 ? "" : "s"}? This action cannot be undone.
-					</DialogDescription>
+					<DialogTitle>{copy.title}</DialogTitle>
+					<DialogDescription>{copy.description}</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => setOpen(false)}>
-						Cancel
+						{copy.cancel}
 					</Button>
 					<Button
 						variant="destructive"
 						onClick={handleDelete}
 						disabled={disabled}
 					>
-						Delete
+						{copy.confirm}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

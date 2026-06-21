@@ -1,4 +1,5 @@
 import { type ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/i18n/language-provider";
 import { cn } from "@/utils/ui";
 import { Input } from "./input";
 import {
@@ -40,6 +41,10 @@ const CHECKERBOARD_STYLE = {
 	backgroundColor: "#fff",
 } as const;
 
+function isColorFormat(value: string): value is ColorFormat {
+	return value === "hex" || value === "rgb" || value === "hsl" || value === "hsv";
+}
+
 interface ColorPickerContentProps {
 	value?: string;
 	onChange?: (value: string) => void;
@@ -55,6 +60,7 @@ function ColorPickerContent({
 	side = "left",
 	align = "center",
 }: ColorPickerContentProps) {
+	const { copy } = useI18n();
 	const [isDragging, setIsDragging] = useState<
 		"saturation" | "hue" | "opacity" | null
 	>(null);
@@ -78,7 +84,13 @@ function ColorPickerContent({
 	const displayHue = s === 0 || isSameHueWrapped ? internalHue : h;
 
 	useEffect(() => {
-		setInputValue(formatColorValue({ hex: value, format: colorFormat }));
+		const frame = requestAnimationFrame(() => {
+			setInputValue(formatColorValue({ hex: value, format: colorFormat }));
+		});
+
+		return () => {
+			cancelAnimationFrame(frame);
+		};
 	}, [value, colorFormat]);
 
 	useEffect(() => {
@@ -291,11 +303,11 @@ function ColorPickerContent({
 			<header className="border-b flex justify-between items-center pb-2 px-2">
 				<Select defaultValue="custom">
 					<SelectTrigger variant="outline">
-						<SelectValue placeholder="Select a mode" />
+						<SelectValue placeholder={copy.common.selectMode} />
 					</SelectTrigger>
 					<SelectContent position="popper">
-						<SelectItem value="custom">Custom</SelectItem>
-						<SelectItem value="saved">Saved</SelectItem>
+						<SelectItem value="custom">{copy.common.custom}</SelectItem>
+						<SelectItem value="saved">{copy.common.saved}</SelectItem>
 					</SelectContent>
 				</Select>
 				<div>
@@ -372,9 +384,11 @@ function ColorPickerContent({
 				<div className="flex items-center gap-2">
 					<Select
 						value={colorFormat}
-						onValueChange={(selectedFormat) =>
-							setColorFormat(selectedFormat as ColorFormat)
-						}
+						onValueChange={(selectedFormat) => {
+							if (isColorFormat(selectedFormat)) {
+								setColorFormat(selectedFormat);
+							}
+						}}
 					>
 						<SelectTrigger variant="outline" className="min-w-18 max-w-18">
 							<SelectValue />
@@ -432,7 +446,13 @@ const ColorPicker = forwardRef<HTMLDivElement, ColorPickerProps>(
 		const [inputValue, setInputValue] = useState(value);
 
 		useEffect(() => {
-			setInputValue(value);
+			const frame = requestAnimationFrame(() => {
+				setInputValue(value);
+			});
+
+			return () => {
+				cancelAnimationFrame(frame);
+			};
 		}, [value]);
 
 		const commitInputValue = (raw: string) => {

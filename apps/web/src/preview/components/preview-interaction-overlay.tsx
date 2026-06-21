@@ -8,9 +8,11 @@ import { SnapGuides } from "./snap-guides";
 import { TextEditOverlay } from "./text-edit-overlay";
 import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 
 export function PreviewInteractionOverlay() {
 	const [snapLines, setSnapLines] = useState<SnapLine[]>([]);
+	const { locale } = useI18n();
 	const editor = useEditor();
 	const viewport = usePreviewViewport();
 	const selectedElements = useEditor((e) => e.selection.getSelectedElements());
@@ -70,7 +72,7 @@ export function PreviewInteractionOverlay() {
 			<div
 				className="absolute inset-0 pointer-events-auto"
 				role="application"
-				aria-label="Preview canvas"
+				aria-label={locale === "zh-CN" ? "预览画布" : "Preview canvas"}
 				style={{
 					cursor: viewport.isPanning
 						? "grabbing"

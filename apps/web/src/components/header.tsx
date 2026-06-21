@@ -16,7 +16,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/utils/ui";
-import { DEFAULT_LOGO_URL, SITE_URL } from "@/site/brand";
+import { DEFAULT_LOGO_URL } from "@/site/brand";
 import { SOCIAL_LINKS } from "@/site/social";
 import {
 	ContextMenu,
@@ -24,26 +24,29 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger,
 } from "./ui/context-menu";
+import { LanguageToggle } from "./language-toggle";
+import { useI18n } from "@/i18n/language-provider";
 
 export function Header() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const closeMenu = () => setIsMenuOpen(false);
+	const { copy } = useI18n();
 
 	const links = [
 		{
-			label: "Roadmap",
+			label: copy.header.links.roadmap,
 			href: "/roadmap",
 		},
 		{
-			label: "Contributors",
+			label: copy.header.links.contributors,
 			href: "/contributors",
 		},
 		{
-			label: "Sponsors",
+			label: copy.header.links.sponsors,
 			href: "/sponsors",
 		},
 		{
-			label: "Blog",
+			label: copy.header.links.blog,
 			href: "/blog",
 		},
 	];
@@ -57,7 +60,7 @@ export function Header() {
 							<Link href="/" className="flex items-center gap-3">
 								<Image
 									src={DEFAULT_LOGO_URL}
-									alt="OpenCut Logo"
+									alt={copy.header.logoAlt}
 									className="invert dark:invert-0"
 									width={32}
 									height={32}
@@ -73,7 +76,7 @@ export function Header() {
 								}}
 							>
 								<HugeiconsIcon icon={Copy01Icon} />
-								Copy SVG
+								{copy.header.copySvg}
 							</ContextMenuItem>
 							<ContextMenuItem
 								onClick={() => {
@@ -84,12 +87,12 @@ export function Header() {
 								}}
 							>
 								<HugeiconsIcon icon={Download01Icon} />
-								Download SVG
+								{copy.header.downloadSvg}
 							</ContextMenuItem>
 							<Link href="/brand">
 								<ContextMenuItem>
 									<HugeiconsIcon icon={LinkSquare02Icon} />
-									Brand assets
+									{copy.header.brandAssets}
 								</ContextMenuItem>
 							</Link>
 						</ContextMenuContent>
@@ -118,6 +121,7 @@ export function Header() {
 						</Button>
 					</div>
 					<div className="hidden items-center gap-3 md:flex">
+						<LanguageToggle />
 						<Link href={SOCIAL_LINKS.github}>
 							<Button className="bg-background text-sm" variant="outline">
 								<HugeiconsIcon icon={GithubIcon} className="size-4" />
@@ -126,7 +130,7 @@ export function Header() {
 						</Link>
 						<Link href="/projects">
 							<Button className="text-sm">
-								Projects
+								{copy.header.projects}
 								<ArrowRight className="size-4" />
 							</Button>
 						</Link>
@@ -143,7 +147,7 @@ export function Header() {
 					<div className="relative h-full">
 						<button
 							type="button"
-							aria-label="Close menu"
+							aria-label={copy.header.closeMenu}
 							className="absolute inset-0"
 							onClick={closeMenu}
 							onKeyDown={(event) => {
@@ -182,6 +186,7 @@ export function Header() {
 								</motion.div>
 							))}
 						</nav>
+						<LanguageToggle className="absolute left-8 bottom-8 h-10 px-3" />
 						<ThemeToggle
 							className="absolute right-8 bottom-8 size-10"
 							iconClassName="!size-[1.2rem]"

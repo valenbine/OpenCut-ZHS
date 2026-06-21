@@ -80,6 +80,7 @@ import { uppercase } from "@/utils/string";
 import { useMemo, type ComponentProps, type ReactNode } from "react";
 import type { SelectedKeyframeRef, ElementKeyframe } from "@/animation/types";
 import { cn } from "@/utils/ui";
+import { useI18n } from "@/i18n/language-provider";
 import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
 import { getTrackTypeForElementType } from "@/timeline/placement/compatibility";
 import { useTimelineStore } from "@/timeline/timeline-store";
@@ -343,7 +344,9 @@ export function TimelineElement({
 	const sourceAudioLabel =
 		element.type === "video"
 			? getSourceAudioActionLabel({ element })
-			: "Extract audio";
+			: locale === "zh-CN"
+				? "提取音频"
+				: "Extract audio";
 	const isElementSourceAudioSeparated =
 		element.type === "video" && isSourceAudioSeparated({ element });
 	const hasKeyframes = elementKeyframes.length > 0;
@@ -427,7 +430,7 @@ export function TimelineElement({
 						action="split"
 						icon={<HugeiconsIcon icon={ScissorIcon} />}
 					>
-						Split
+						{locale === "zh-CN" ? "拆分" : "Split"}
 					</ActionMenuItem>
 					<CopyMenuItem />
 					{selectedElements.length === 1 && (
@@ -435,7 +438,7 @@ export function TimelineElement({
 							action="duplicate-selected"
 							icon={<HugeiconsIcon icon={Copy01Icon} />}
 						>
-							Duplicate
+							{locale === "zh-CN" ? "复制" : "Duplicate"}
 						</ActionMenuItem>
 					)}
 					{canElementHaveAudio(element) && hasAudio && (
@@ -477,7 +480,7 @@ export function TimelineElement({
 								toggleElementExpanded(element.id);
 							}}
 						>
-							{isExpanded ? "Collapse keyframes" : "Expand keyframes"}
+							{isExpanded ? (locale === "zh-CN" ? "收起关键帧" : "Collapse keyframes") : (locale === "zh-CN" ? "展开关键帧" : "Expand keyframes")}
 						</ContextMenuItem>
 					)}
 					{selectedElements.length === 1 && hasMediaId(element) && (
@@ -488,13 +491,13 @@ export function TimelineElement({
 									handleRevealInMedia({ event })
 								}
 							>
-								Reveal media
+								{locale === "zh-CN" ? "在素材中定位" : "Reveal media"}
 							</ContextMenuItem>
 							<ContextMenuItem
 								icon={<HugeiconsIcon icon={Exchange01Icon} />}
 								disabled
 							>
-								Replace media
+								{locale === "zh-CN" ? "替换素材" : "Replace media"}
 							</ContextMenuItem>
 						</>
 					)}
@@ -639,6 +642,7 @@ function ResizeHandle({
 		side: "left" | "right";
 	}) => void;
 }) {
+	const { locale } = useI18n();
 	const isLeft = side === "left";
 	return (
 		<button
@@ -649,7 +653,11 @@ function ResizeHandle({
 			)}
 			onMouseDown={(event) => onResizeStart({ event, element, track, side })}
 			onClick={(event) => event.stopPropagation()}
-			aria-label={`${isLeft ? "Left" : "Right"} resize handle`}
+			aria-label={
+				locale === "zh-CN"
+					? `${isLeft ? "左侧" : "右侧"}缩放手柄`
+					: `${isLeft ? "Left" : "Right"} resize handle`
+			}
 		></button>
 	);
 }
@@ -686,6 +694,7 @@ function KeyframeIndicators({
 	}) => number;
 }) {
 	const { isKeyframeSelected } = useKeyframeSelection();
+	const { locale } = useI18n();
 	const orderedKeyframes = indicators.flatMap(
 		(indicator) => indicator.keyframes,
 	);
@@ -722,7 +731,7 @@ function KeyframeIndicators({
 						indicatorTime: indicator.time,
 					})
 				}
-				aria-label="Select keyframe"
+				aria-label={locale === "zh-CN" ? "选择关键帧" : "Select keyframe"}
 			>
 				<HugeiconsIcon
 					icon={KeyframeIcon}
@@ -789,6 +798,7 @@ function ExpandedKeyframeLanes({
 	}) => number;
 }) {
 	const { isKeyframeSelected } = useKeyframeSelection();
+	const { locale } = useI18n();
 
 	const orderedKeyframes = useMemo(
 		() =>
@@ -875,7 +885,7 @@ function ExpandedKeyframeLanes({
 											indicatorTime: kf.time,
 										});
 									}}
-									aria-label="Select keyframe"
+								aria-label={locale === "zh-CN" ? "选择关键帧" : "Select keyframe"}
 								>
 									<HugeiconsIcon
 										icon={KeyframeIcon}
@@ -1201,6 +1211,7 @@ function MuteMenuItem({
 	isCurrentElementSelected: boolean;
 	isMuted: boolean;
 }) {
+	const { locale } = useI18n();
 	const getIcon = () => {
 		if (isMultipleSelected && isCurrentElementSelected) {
 			return <HugeiconsIcon icon={VolumeMute02Icon} />;
@@ -1214,7 +1225,7 @@ function MuteMenuItem({
 
 	return (
 		<ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
-			{isMuted ? "Unmute" : "Mute"}
+			{isMuted ? (locale === "zh-CN" ? "取消静音" : "Unmute") : (locale === "zh-CN" ? "静音" : "Mute")}
 		</ActionMenuItem>
 	);
 }
@@ -1228,6 +1239,7 @@ function VisibilityMenuItem({
 	isMultipleSelected: boolean;
 	isCurrentElementSelected: boolean;
 }) {
+	const { locale } = useI18n();
 	const isHidden = canElementBeHidden(element) && element.hidden;
 
 	const getIcon = () => {
@@ -1246,7 +1258,7 @@ function VisibilityMenuItem({
 			action="toggle-elements-visibility-selected"
 			icon={getIcon()}
 		>
-			{isHidden ? "Show" : "Hide"}
+			{isHidden ? (locale === "zh-CN" ? "显示" : "Show") : (locale === "zh-CN" ? "隐藏" : "Hide")}
 		</ActionMenuItem>
 	);
 }
@@ -1262,6 +1274,7 @@ function DeleteMenuItem({
 	elementType: TimelineElementType["type"];
 	selectedCount: number;
 }) {
+	const { locale } = useI18n();
 	return (
 		<ActionMenuItem
 			action="delete-selected"
@@ -1269,8 +1282,12 @@ function DeleteMenuItem({
 			icon={<HugeiconsIcon icon={Delete02Icon} />}
 		>
 			{isMultipleSelected && isCurrentElementSelected
-				? `Delete ${selectedCount} elements`
-				: `Delete ${elementType === "text" ? "text" : "clip"}`}
+				? locale === "zh-CN"
+					? `删除 ${selectedCount} 个元素`
+					: `Delete ${selectedCount} elements`
+				: locale === "zh-CN"
+					? `删除${elementType === "text" ? "文字" : "片段"}`
+					: `Delete ${elementType === "text" ? "text" : "clip"}`}
 		</ActionMenuItem>
 	);
 }

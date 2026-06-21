@@ -3,6 +3,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { useCommittedRef } from "@/hooks/use-committed-ref";
+import { useI18n } from "@/i18n/language-provider";
 import { getBezierPoint } from "@/animation/bezier";
 import type { NormalizedCubicBezier } from "@/animation/types";
 import { cn } from "@/utils/ui";
@@ -85,6 +86,7 @@ export function BezierGraph({
 	onChangeEnd?: (value: NormalizedCubicBezier) => void;
 	onCancel?: () => void;
 }) {
+	const { locale } = useI18n();
 	const svgRef = useRef<SVGSVGElement>(null);
 	const [activeHandle, setActiveHandle] = useState<BezierHandle | null>(null);
 	const isShiftPressedRef = useShiftKey();
@@ -164,7 +166,7 @@ export function BezierGraph({
 			onPointerUp={onPointerUp}
 			onPointerCancel={onPointerCancel}
 		>
-			<title>Bezier curve editor</title>
+			<title>{locale === "zh-CN" ? "贝塞尔曲线编辑器" : "Bezier curve editor"}</title>
 			<line
 				x1={p0.x}
 				y1={p0.y}

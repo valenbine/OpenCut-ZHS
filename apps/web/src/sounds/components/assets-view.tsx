@@ -22,6 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { useI18n } from "@/i18n/language-provider";
 import { useSoundSearch } from "@/sounds/use-sound-search";
 import { useSoundsStore } from "@/sounds/sounds-store";
 import type { SavedSound, SoundEffect } from "@/sounds/types";
@@ -36,13 +37,14 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export function SoundsView() {
+	const { locale } = useI18n();
 	return (
 		<div className="flex h-full flex-col">
 			<Tabs defaultValue="sound-effects" className="flex h-full flex-col">
 				<div className="px-3 pt-4 pb-0">
 					<TabsList>
-						<TabsTrigger value="sound-effects">Sound effects</TabsTrigger>
-						<TabsTrigger value="saved">Saved</TabsTrigger>
+						<TabsTrigger value="sound-effects">{locale === "zh-CN" ? "音效" : "Sound effects"}</TabsTrigger>
+						<TabsTrigger value="saved">{locale === "zh-CN" ? "已保存" : "Saved"}</TabsTrigger>
 					</TabsList>
 				</div>
 				<Separator className="my-4" />
@@ -64,6 +66,7 @@ export function SoundsView() {
 }
 
 function SoundEffectsView() {
+	const { locale } = useI18n();
 	const {
 		topSoundEffects,
 		isLoading,
@@ -186,12 +189,11 @@ function SoundEffectsView() {
 		return () => clearTimeout(timeoutId);
 	}, [scrollPosition, scrollAreaRef]);
 
-	const handleScrollWithPosition = ({
-		currentTarget,
-	}: React.UIEvent<HTMLDivElement>) => {
+	const handleScrollWithPosition = (event: React.UIEvent<HTMLDivElement>) => {
+		const { currentTarget } = event;
 		const { scrollTop } = currentTarget;
 		setScrollPosition({ position: scrollTop });
-		handleScroll({ currentTarget } as React.UIEvent<HTMLDivElement>);
+		handleScroll(event);
 	};
 
 	const displayedSounds = searchQuery ? searchResults : topSoundEffects;
@@ -227,7 +229,7 @@ function SoundEffectsView() {
 		<div className="mt-1 flex h-full flex-col gap-5">
 			<div className="flex items-center gap-3">
 				<Input
-					placeholder="Search sound effects"
+					placeholder={locale === "zh-CN" ? "搜索音效" : "Search sound effects"}
 					className="w-full"
 					containerClassName="w-full"
 					value={searchQuery}
@@ -252,12 +254,16 @@ function SoundEffectsView() {
 							checked={showCommercialOnly}
 							onCheckedChange={() => toggleCommercialFilter()}
 						>
-							Show only commercially licensed
+							{locale === "zh-CN" ? "仅显示可商用授权" : "Show only commercially licensed"}
 						</DropdownMenuCheckboxItem>
 						<div className="text-muted-foreground px-2 py-1.5 text-xs">
 							{showCommercialOnly
-								? "Only showing sounds licensed for commercial use"
-								: "Showing all sounds regardless of license"}
+								? locale === "zh-CN"
+									? "当前仅显示可商用授权的音效"
+									: "Only showing sounds licensed for commercial use"
+								: locale === "zh-CN"
+									? "当前显示全部音效，不区分授权"
+									: "Showing all sounds regardless of license"}
 						</div>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -272,11 +278,11 @@ function SoundEffectsView() {
 					<div className="flex flex-col gap-4">
 						{isLoading && !searchQuery && (
 							<div className="text-muted-foreground text-sm">
-								Loading sounds...
+								{locale === "zh-CN" ? "正在加载音效..." : "Loading sounds..."}
 							</div>
 						)}
 						{isSearching && searchQuery && (
-							<div className="text-muted-foreground text-sm">Searching...</div>
+							<div className="text-muted-foreground text-sm">{locale === "zh-CN" ? "正在搜索..." : "Searching..."}</div>
 						)}
 						{displayedSounds.map((sound) => (
 							<AudioItem
@@ -288,12 +294,12 @@ function SoundEffectsView() {
 						))}
 						{!isLoading && !isSearching && displayedSounds.length === 0 && (
 							<div className="text-muted-foreground text-sm">
-								{searchQuery ? "No sounds found" : "No sounds available"}
+								{searchQuery ? (locale === "zh-CN" ? "没有找到音效" : "No sounds found") : (locale === "zh-CN" ? "暂无可用音效" : "No sounds available")}
 							</div>
 						)}
 						{isLoadingMore && (
 							<div className="text-muted-foreground py-4 text-center text-sm">
-								Loading more sounds...
+								{locale === "zh-CN" ? "正在加载更多音效..." : "Loading more sounds..."}
 							</div>
 						)}
 					</div>
@@ -304,6 +310,7 @@ function SoundEffectsView() {
 }
 
 function SavedSoundsView() {
+	const { locale } = useI18n();
 	const {
 		savedSounds,
 		isLoadingSavedSounds,
@@ -381,7 +388,7 @@ function SavedSoundsView() {
 		return (
 			<div className="flex h-full items-center justify-center">
 				<div className="text-muted-foreground text-sm">
-					Loading saved sounds...
+					{locale === "zh-CN" ? "正在加载已保存音效..." : "Loading saved sounds..."}
 				</div>
 			</div>
 		);
@@ -391,7 +398,8 @@ function SavedSoundsView() {
 		return (
 			<div className="flex h-full items-center justify-center">
 				<div className="text-destructive text-sm">
-					Error: {savedSoundsError}
+					{locale === "zh-CN" ? "错误：" : "Error: "}
+					{savedSoundsError}
 				</div>
 			</div>
 		);
@@ -405,9 +413,9 @@ function SavedSoundsView() {
 					className="text-muted-foreground size-10"
 				/>
 				<div className="flex flex-col gap-2 text-center">
-					<p className="text-lg font-medium">No saved sounds</p>
+					<p className="text-lg font-medium">{locale === "zh-CN" ? "暂无已保存音效" : "No saved sounds"}</p>
 					<p className="text-muted-foreground text-sm text-balance">
-						Click the heart icon on any sound to save it here
+						{locale === "zh-CN" ? "点击任意音效上的心形图标即可保存到这里" : "Click the heart icon on any sound to save it here"}
 					</p>
 				</div>
 			</div>
@@ -418,8 +426,7 @@ function SavedSoundsView() {
 		<div className="mt-1 flex h-full flex-col gap-5">
 			<div className="flex items-center justify-between">
 				<p className="text-muted-foreground text-sm">
-					{savedSounds.length} saved{" "}
-					{savedSounds.length === 1 ? "sound" : "sounds"}
+					{locale === "zh-CN" ? `已保存 ${savedSounds.length} 个音效` : `${savedSounds.length} saved ${savedSounds.length === 1 ? "sound" : "sounds"}`}
 				</p>
 				<Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
 					<DialogTrigger asChild>
@@ -428,20 +435,19 @@ function SavedSoundsView() {
 							size="sm"
 							className="text-muted-foreground hover:text-destructive h-auto !opacity-100"
 						>
-							Clear all
+							{locale === "zh-CN" ? "清空全部" : "Clear all"}
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Clear all saved sounds?</DialogTitle>
+							<DialogTitle>{locale === "zh-CN" ? "清空所有已保存音效？" : "Clear all saved sounds?"}</DialogTitle>
 							<DialogDescription>
-								This will permanently remove all {savedSounds.length} saved
-								sounds from your collection. This action cannot be undone.
+								{locale === "zh-CN" ? `这会永久移除你收藏中的 ${savedSounds.length} 个音效，此操作无法撤销。` : `This will permanently remove all ${savedSounds.length} saved sounds from your collection. This action cannot be undone.`}
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
 							<Button variant="text" onClick={() => setShowClearDialog(false)}>
-								Cancel
+								{locale === "zh-CN" ? "取消" : "Cancel"}
 							</Button>
 							<Button
 								variant="destructive"
@@ -453,7 +459,7 @@ function SavedSoundsView() {
 									setShowClearDialog(false);
 								}}
 							>
-								Clear all sounds
+								{locale === "zh-CN" ? "清空全部音效" : "Clear all sounds"}
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -485,6 +491,7 @@ interface AudioItemProps {
 }
 
 function AudioItem({ sound, isPlaying, onPlay }: AudioItemProps) {
+	const { locale } = useI18n();
 	const { addSoundToTimeline, isSoundSaved, toggleSavedSound } =
 		useSoundsStore();
 	const isSaved = isSoundSaved({ soundId: sound.id });
@@ -537,7 +544,7 @@ function AudioItem({ sound, isPlaying, onPlay }: AudioItemProps) {
 					size="icon"
 					className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
 					onClick={handleAddToTimeline}
-					title="Add to timeline"
+					title={locale === "zh-CN" ? "添加到时间线" : "Add to timeline"}
 				>
 					<HugeiconsIcon icon={PlusSignIcon} />
 				</Button>
@@ -550,7 +557,7 @@ function AudioItem({ sound, isPlaying, onPlay }: AudioItemProps) {
 							: "text-muted-foreground"
 					}`}
 					onClick={handleSaveClick}
-					title={isSaved ? "Remove from saved" : "Save sound"}
+					title={isSaved ? (locale === "zh-CN" ? "取消保存" : "Remove from saved") : (locale === "zh-CN" ? "保存音效" : "Save sound")}
 				>
 					<HugeiconsIcon
 						icon={FavouriteIcon}

@@ -13,15 +13,16 @@ import { loadFullFont } from "@/fonts/google-fonts";
 import { SYSTEM_FONTS } from "@/fonts/system-fonts";
 import type { FontAtlas, FontAtlasEntry } from "@/fonts/types";
 import { useFontAtlas } from "@/fonts/use-font-atlas";
+import { useI18n } from "@/i18n/language-provider";
 import { cn } from "@/utils/ui";
 import { ChevronDown, Search } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { TextIcon } from "@hugeicons/core-free-icons";
 
 const FONT_TABS = [
-	{ key: "all", label: "All fonts" },
-	{ key: "my-fonts", label: "My fonts" },
-	{ key: "favorites", label: "Favorites" },
+	{ key: "all", labelKey: "all" },
+	{ key: "my-fonts", labelKey: "myFonts" },
+	{ key: "favorites", labelKey: "favorites" },
 ] as const;
 
 type FontTab = (typeof FONT_TABS)[number]["key"];
@@ -43,6 +44,7 @@ export function FontPicker({
 	onValueChange,
 	className,
 }: FontPickerProps) {
+	const { copy } = useI18n();
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [activeTab, setActiveTab] = useState<FontTab>("all");
@@ -77,13 +79,23 @@ export function FontPicker({
 
 	useEffect(() => {
 		if (!open) {
-			setSearch("");
-			setActiveTab("all");
+			const frameId = requestAnimationFrame(() => {
+				setSearch("");
+				setActiveTab("all");
+			});
+
+			return () => cancelAnimationFrame(frameId);
 		}
 	}, [open]);
 
+	const tabLabels = {
+		all: copy.fontPicker.tabs.all,
+		"my-fonts": copy.fontPicker.tabs.myFonts,
+		favorites: copy.fontPicker.tabs.favorites,
+	} as const;
+
 	const activeTabLabel =
-		FONT_TABS.find((t) => t.key === activeTab)?.label.toLowerCase() ?? "";
+		tabLabels[FONT_TABS.find((t) => t.key === activeTab)?.key ?? "all"];
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -98,7 +110,7 @@ export function FontPicker({
 						<HugeiconsIcon icon={TextIcon} />
 					</span>
 					<span className="truncate" style={{ fontFamily: defaultValue }}>
-						{defaultValue ?? "Select a font"}
+						{defaultValue ?? copy.fontPicker.selectFont}
 					</span>
 				</div>
 				<ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -120,7 +132,7 @@ export function FontPicker({
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 shrink-0 opacity-50" />
 					<Input
 						ref={searchInputRef}
-						placeholder={`Search ${activeTabLabel}...`}
+						placeholder={copy.fontPicker.searchPlaceholder({ scope: activeTabLabel })}
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						size="xs"
@@ -140,22 +152,22 @@ export function FontPicker({
 							)}
 							onClick={() => setActiveTab(tab.key)}
 						>
-							{tab.label}
+							{tabLabels[tab.key]}
 						</button>
 					))}
 				</div>
 				{status === "loading" && (
 					<div className="py-8 text-center text-sm text-muted-foreground">
-						Loading fonts...
+						{copy.fontPicker.loading}
 					</div>
 				)}
 				{status === "error" && (
 					<div className="flex flex-col items-center gap-3 py-8 px-4">
 						<p className="text-sm text-muted-foreground text-center">
-							Failed to load font previews.
+							{copy.fontPicker.error}
 						</p>
 						<Button variant="outline" size="sm" onClick={handleRetry}>
-							Retry
+							{copy.fontPicker.retry}
 						</Button>
 					</div>
 				)}
@@ -163,7 +175,7 @@ export function FontPicker({
 					fontNames.length > 0 &&
 					filteredFonts.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							No fonts found.
+							{copy.fontPicker.empty}
 						</div>
 					)}
 				{status === "idle" && atlas && filteredFonts.length > 0 && (

@@ -30,6 +30,7 @@ import {
 } from "@/preview/overlays";
 import { usePreviewStore } from "@/preview/preview-store";
 import { getGuidePreviewOverlaySource } from "@/guides";
+import { useI18n } from "@/i18n/language-provider";
 import {
 	bookmarkNotesPreviewOverlay,
 	getBookmarkPreviewOverlaySource,
@@ -37,7 +38,11 @@ import {
 
 export default function Editor() {
 	const params = useParams();
-	const projectId = params.project_id as string;
+	const projectId = Array.isArray(params.project_id)
+		? params.project_id[0] ?? ""
+		: typeof params.project_id === "string"
+			? params.project_id
+			: "";
 
 	return (
 		<MobileGate>
@@ -59,18 +64,23 @@ export default function Editor() {
 
 function DegradedRendererBanner() {
 	const isDegraded = useEditor((e) => e.renderer.isDegraded);
+	const { locale } = useI18n();
 	const [dismissed, setDismissed] = useState(false);
 	if (!isDegraded || dismissed) return null;
 
 	return (
 		<div className="bg-accent border-b h-9 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-			<span>For the best experience, open OpenCut in Chrome.</span>
+			<span>
+				{locale === "zh-CN"
+					? "为了获得最佳体验，请使用 Chrome 打开 OpenCut。"
+					: "For the best experience, open OpenCut in Chrome."}
+			</span>
 			<Button
 				variant="text"
 				size="icon"
 				className="p-0 w-auto [&_svg]:size-3.5"
 				onClick={() => setDismissed(true)}
-				aria-label="Dismiss"
+				aria-label={locale === "zh-CN" ? "关闭提示" : "Dismiss"}
 			>
 				<HugeiconsIcon icon={Cancel01Icon} />
 			</Button>

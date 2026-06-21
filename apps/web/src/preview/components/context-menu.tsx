@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/context-menu";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 import type { PreviewOverlayControl } from "@/preview/overlays";
 import { toast } from "sonner";
 
@@ -26,14 +27,15 @@ export function PreviewContextMenu({
 	}) => void;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const viewport = usePreviewViewport();
 
 	const handleCopySnapshot = async () => {
 		const result = await editor.renderer.copySnapshot();
 
 		if (!result.success) {
-			toast.error("Failed to copy snapshot", {
-				description: result.error ?? "Please try again",
+			toast.error(locale === "zh-CN" ? "复制快照失败" : "Failed to copy snapshot", {
+				description: result.error ?? (locale === "zh-CN" ? "请重试" : "Please try again"),
 			});
 			return;
 		}
@@ -43,8 +45,8 @@ export function PreviewContextMenu({
 		const result = await editor.renderer.saveSnapshot();
 
 		if (!result.success) {
-			toast.error("Failed to save snapshot", {
-				description: result.error ?? "Please try again",
+			toast.error(locale === "zh-CN" ? "保存快照失败" : "Failed to save snapshot", {
+				description: result.error ?? (locale === "zh-CN" ? "请重试" : "Please try again"),
 			});
 			return;
 		}
@@ -53,17 +55,17 @@ export function PreviewContextMenu({
 	return (
 		<ContextMenuContent className="w-56" container={container}>
 			<ContextMenuItem onClick={viewport.fitToScreen} inset>
-				Fit to screen
+				{locale === "zh-CN" ? "适应屏幕" : "Fit to screen"}
 			</ContextMenuItem>
 			<ContextMenuSeparator />
 			<ContextMenuItem onClick={onToggleFullscreen} inset>
-				Full screen
+				{locale === "zh-CN" ? "全屏" : "Full screen"}
 			</ContextMenuItem>
 			<ContextMenuItem onClick={handleSaveSnapshot} inset>
-				Save snapshot
+				{locale === "zh-CN" ? "保存快照" : "Save snapshot"}
 			</ContextMenuItem>
 			<ContextMenuItem onClick={handleCopySnapshot} inset>
-				Copy snapshot
+				{locale === "zh-CN" ? "复制快照" : "Copy snapshot"}
 			</ContextMenuItem>
 			{overlayControls.length > 0 ? <ContextMenuSeparator /> : null}
 			{overlayControls.map((overlayControl) => (

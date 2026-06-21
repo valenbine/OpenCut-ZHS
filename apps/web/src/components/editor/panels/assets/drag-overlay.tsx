@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { UploadIcon } from "@hugeicons/core-free-icons";
+import { useI18n } from "@/i18n/language-provider";
 
 interface MediaDragOverlayProps {
 	isVisible: boolean;
@@ -14,6 +15,17 @@ export function MediaDragOverlay({
 	progress = 0,
 	onClick,
 }: MediaDragOverlayProps) {
+	const { locale } = useI18n();
+	const copy = locale === "zh-CN"
+		? {
+			processing: (progress: number) => `正在处理文件（${progress}%）`,
+			drop: "将视频、图片和音频文件拖放到这里",
+		}
+		: {
+			processing: (progress: number) => `Processing your files (${progress}%)`,
+			drop: "Drag and drop videos, photos, and audio files here",
+		};
+
 	if (!isVisible) return null;
 
 	const handleClick = ({
@@ -40,9 +52,7 @@ export function MediaDragOverlay({
 
 			<div className="space-y-2">
 				<p className="text-muted-foreground max-w-sm text-xs">
-					{isProcessing
-						? `Processing your files (${progress}%)`
-						: "Drag and drop videos, photos, and audio files here"}
+					{isProcessing ? copy.processing(progress) : copy.drop}
 				</p>
 			</div>
 

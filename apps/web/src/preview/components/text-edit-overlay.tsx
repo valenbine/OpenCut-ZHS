@@ -15,6 +15,7 @@ import {
 	buildTextBackgroundFromElement,
 	buildTextLayoutParamsFromElement,
 } from "@/text/measure-element";
+import { useI18n } from "@/i18n/language-provider";
 
 export function TextEditOverlay({
 	trackId,
@@ -28,6 +29,7 @@ export function TextEditOverlay({
 	onCommit: () => void;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const viewport = usePreviewViewport();
 	const divRef = useRef<HTMLDivElement>(null);
 
@@ -122,7 +124,7 @@ export function TextEditOverlay({
 				suppressContentEditableWarning
 				tabIndex={0}
 				role="textbox"
-				aria-label="Edit text"
+				aria-label={locale === "zh-CN" ? "编辑文本" : "Edit text"}
 				className="cursor-text select-text outline-none whitespace-pre"
 				style={{
 					fontSize: resolvedTextLayout.scaledFontSize,

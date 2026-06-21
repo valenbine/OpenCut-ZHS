@@ -21,6 +21,8 @@ bun.lockb
 
 .open-next
 
+test-results/
+
 target/
 
 .cargo-tools/

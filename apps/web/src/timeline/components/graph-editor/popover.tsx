@@ -21,6 +21,7 @@ import {
 } from "./easing-presets";
 import { removePreset, savePreset, useCustomPresets } from "./custom-presets-store";
 import { BezierGraph, BEZIER_GRAPH_MIN_HEIGHT } from "./bezier-graph";
+import { useI18n } from "@/i18n/language-provider";
 
 const COLLAPSED_MAX = 6;
 const THUMB_SEGMENTS = 24;
@@ -30,6 +31,29 @@ const THUMB_PADDING_X = 4;
 const THUMB_PADDING_Y = 3;
 const COLLAPSED_GRID_MAX_HEIGHT = 120;
 const EXPANDED_GRID_MAX_HEIGHT = 240;
+
+function localizeGraphEditorLabel({
+	label,
+	locale,
+}: {
+	label: string;
+	locale: string;
+}): string {
+	if (locale !== "zh-CN") {
+		return label;
+	}
+
+	if (label === "Value") {
+		return "值";
+	}
+
+	const customPresetMatch = /^Custom\s+(\d+)$/.exec(label);
+	if (customPresetMatch) {
+		return `自定义 ${customPresetMatch[1]}`;
+	}
+
+	return label;
+}
 
 export function GraphEditorPopover({
 	children,
@@ -58,6 +82,7 @@ export function GraphEditorPopover({
 	onCommitValue?: (value: NormalizedCubicBezier) => void;
 	onCancelPreview?: () => void;
 }) {
+	const { locale } = useI18n();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const custom = useCustomPresets();
 	const allPresets = [...BUILTIN_PRESETS, ...custom];
@@ -100,12 +125,12 @@ export function GraphEditorPopover({
 										"cursor-pointer rounded-sm px-2 py-1 text-xs font-medium",
 										activeComponentKey === component.key
 											? "bg-background text-foreground shadow-xs"
-											: "text-muted-foreground hover:text-foreground",
-									)}
-								>
-									{component.label}
-								</button>
-							))}
+									: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{localizeGraphEditorLabel({ label: component.label, locale })}
+							</button>
+						))}
 						</div>
 					</div>
 				)}
@@ -126,10 +151,10 @@ export function GraphEditorPopover({
 				<Tabs variant="underline" defaultValue="presets" className="flex flex-col gap-2">
 					<TabsList className="px-3">
 						<TabsTrigger value="presets" className="text-xs">
-							Presets
+							{locale === "zh-CN" ? "预设" : "Presets"}
 						</TabsTrigger>
 						<TabsTrigger value="saved" className="text-xs">
-							Saved
+							{locale === "zh-CN" ? "已保存" : "Saved"}
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="presets" className="px-3 pb-0">
@@ -178,7 +203,7 @@ export function GraphEditorPopover({
 										className="size-3.5 opacity-40"
 									/>
 								</div>
-								<span className="text-[10px] leading-tight">Save</span>
+								<span className="text-[10px] leading-tight">{locale === "zh-CN" ? "保存" : "Save"}</span>
 							</button>
 						</div>
 					</TabsContent>
@@ -253,6 +278,7 @@ function PresetItem({
 	onDelete?: () => void;
 	disabled?: boolean;
 }) {
+	const { locale } = useI18n();
 	return (
 		<button
 			type="button"
@@ -280,7 +306,7 @@ function PresetItem({
 					isActive ? "text-primary" : "text-muted-foreground",
 				)}
 			>
-				{preset.label}
+				{localizeGraphEditorLabel({ label: preset.label, locale })}
 			</span>
 			{onDelete && (
 				<Button
@@ -308,6 +334,7 @@ function toThumbY({ value }: { value: number }) {
 }
 
 function CurveThumb({ value }: { value: NormalizedCubicBezier }) {
+	const { locale } = useI18n();
 	const points: string[] = [];
 	for (let i = 0; i <= THUMB_SEGMENTS; i++) {
 		const progress = i / THUMB_SEGMENTS;
@@ -321,7 +348,7 @@ function CurveThumb({ value }: { value: NormalizedCubicBezier }) {
 			height={THUMB_HEIGHT}
 			viewBox={`0 0 ${THUMB_WIDTH} ${THUMB_HEIGHT}`}
 		>
-			<title>Curve preset preview</title>
+			<title>{locale === "zh-CN" ? "曲线预设预览" : "Curve preset preview"}</title>
 			<path
 				d={`M${points.join("L")}`}
 				fill="none"

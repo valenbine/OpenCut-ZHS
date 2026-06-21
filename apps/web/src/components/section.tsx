@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDownIcon } from "@hugeicons/core-free-icons";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 
 const sectionExpandedCache = new Map<string, boolean>();
 const mountedSectionKeys = new Set<string>();
@@ -97,6 +98,7 @@ export function SectionHeader({
 	onClick,
 	className,
 }: SectionHeaderProps) {
+	const { locale } = useI18n();
 	const ctx = useSectionContext();
 	const isCollapsible = ctx?.collapsible ?? false;
 	const isOpen = ctx?.isOpen ?? true;
@@ -123,7 +125,15 @@ export function SectionHeader({
 					<Button
 						variant="ghost"
 						size="icon"
-						aria-label={isOpen ? "Collapse section" : "Expand section"}
+						aria-label={
+							isOpen
+								? locale === "zh-CN"
+									? "收起分组"
+									: "Collapse section"
+								: locale === "zh-CN"
+									? "展开分组"
+									: "Expand section"
+						}
 						onClick={handleClick}
 					>
 						{chevronIcon}

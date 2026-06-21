@@ -5,12 +5,14 @@ import Link from "next/link";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 import { getSortedReleases } from "../utils";
 import type { Release } from "../utils";
 
 const STORAGE_KEY = "last-seen-version";
 
 export function ChangelogNotification() {
+	const { copy } = useI18n();
 	const [release, setRelease] = useState<Release | null>(null);
 
 	useEffect(() => {
@@ -42,7 +44,13 @@ export function ChangelogNotification() {
 			// ignore
 		}
 
-		setRelease(latest);
+		const frame = requestAnimationFrame(() => {
+			setRelease(latest);
+		});
+
+		return () => {
+			cancelAnimationFrame(frame);
+		};
 	}, []);
 
 	if (!release) return null;
@@ -63,7 +71,7 @@ export function ChangelogNotification() {
 					size="icon"
 					className="-mr-1 -mt-1 shrink-0"
 					onClick={() => setRelease(null)}
-					aria-label="Dismiss"
+					aria-label={copy.changelog.dismiss}
 				>
 					<HugeiconsIcon icon={Cancel01Icon} className="size-4" />
 				</Button>
@@ -78,7 +86,7 @@ export function ChangelogNotification() {
 			<div className="flex justify-end">
 				<Button asChild size="sm">
 					<Link href="/changelog" onClick={() => setRelease(null)}>
-						See full changelog
+						{copy.changelog.viewFull}
 					</Link>
 				</Button>
 			</div>

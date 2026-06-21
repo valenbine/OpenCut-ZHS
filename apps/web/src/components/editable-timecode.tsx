@@ -12,6 +12,7 @@ import {
 	snapSeekMediaTime,
 	type MediaTime,
 } from "@/wasm";
+import { useI18n } from "@/i18n/language-provider";
 
 interface EditableTimecodeProps {
 	time: MediaTime;
@@ -32,6 +33,7 @@ export function EditableTimecode({
 	className,
 	disabled = false,
 }: EditableTimecodeProps) {
+	const { locale } = useI18n();
 	const [isEditing, setIsEditing] = useState(false);
 	const [inputValue, setInputValue] = useState("");
 	const [hasError, setHasError] = useState(false);
@@ -153,7 +155,13 @@ export function EditableTimecode({
 				disabled && "cursor-default hover:bg-transparent",
 				className,
 			)}
-			title={disabled ? undefined : "Click to edit time"}
+			title={
+				disabled
+					? undefined
+					: locale === "zh-CN"
+						? "点击编辑时间"
+						: "Click to edit time"
+			}
 		>
 			{formattedTime}
 		</button>

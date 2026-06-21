@@ -5,6 +5,7 @@ import { clamp } from "@/utils/math";
 import { useRef, useState, useLayoutEffect, type ComponentProps } from "react";
 import { useFocusLock } from "@/hooks/use-focus-lock";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowTurnBackwardIcon } from "@hugeicons/core-free-icons";
 
@@ -131,9 +132,10 @@ function NumberField({
 	onMouseDown,
 	onReset,
 	isDefault = false,
-	ref,
+	ref: _ref,
 	...props
 }: NumberFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
+	const { copy } = useI18n();
 	const iconRef = useRef<HTMLButtonElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const ghostRef = useRef<HTMLSpanElement>(null);
@@ -145,16 +147,25 @@ function NumberField({
 
 	useLayoutEffect(() => {
 		if (!suffix) {
-			setSuffixLeft(0);
-			return;
+			const frameId = requestAnimationFrame(() => {
+				setSuffixLeft(0);
+			});
+
+			return () => cancelAnimationFrame(frameId);
 		}
 		if (!ghostRef.current || !inputRef.current) return;
-		if (ghostRef.current.textContent !== ghostValue) {
-			ghostRef.current.textContent = ghostValue;
-		}
-		const paddingLeft =
-			parseFloat(getComputedStyle(inputRef.current).paddingLeft) || 0;
-		setSuffixLeft(paddingLeft + ghostRef.current.offsetWidth);
+
+		const frameId = requestAnimationFrame(() => {
+			if (!ghostRef.current || !inputRef.current) return;
+			if (ghostRef.current.textContent !== ghostValue) {
+				ghostRef.current.textContent = ghostValue;
+			}
+			const paddingLeft =
+				parseFloat(getComputedStyle(inputRef.current).paddingLeft) || 0;
+			setSuffixLeft(paddingLeft + ghostRef.current.offsetWidth);
+		});
+
+		return () => cancelAnimationFrame(frameId);
 	}, [ghostValue, suffix]);
 
 	const { containerRef: wrapperRef } = useFocusLock<HTMLDivElement>({
@@ -256,7 +267,7 @@ function NumberField({
 					<button
 						ref={iconRef}
 						type="button"
-						aria-label="Drag to adjust value"
+						aria-label={copy.common.dragToAdjustValue}
 						disabled={disabled}
 						className="text-muted-foreground [&_svg]:size-3.5! shrink-0 select-none pl-2.5 text-sm leading-none cursor-ew-resize"
 						onMouseDown={(event) => event.preventDefault()}
@@ -304,7 +315,7 @@ function NumberField({
 					<Button
 						variant="text"
 						size="text"
-						aria-label="Reset to default"
+						aria-label={copy.common.resetToDefault}
 						onClick={onReset}
 					>
 						<HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3.5!" />

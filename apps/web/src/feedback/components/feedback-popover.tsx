@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { ClockIcon } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import {
 	FormControl,
 	clearFormDraft,
 } from "@/components/ui/form";
+import { useI18n } from "@/i18n/language-provider";
 import type { FeedbackEntry } from "../types";
 
 const PERSIST_KEY = "feedback-draft";
@@ -29,10 +30,23 @@ interface FeedbackFormValues {
 	message: string;
 }
 
+function isFeedbackEntry(value: unknown): value is FeedbackEntry {
+	if (!value || typeof value !== "object") return false;
+
+	return (
+		typeof Reflect.get(value, "id") === "string" &&
+		typeof Reflect.get(value, "message") === "string" &&
+		typeof Reflect.get(value, "createdAt") === "string"
+	);
+}
+
 function readHistory(): FeedbackEntry[] {
 	try {
 		const stored = localStorage.getItem(HISTORY_KEY);
-		return stored ? (JSON.parse(stored) as FeedbackEntry[]) : [];
+		if (!stored) return [];
+
+		const parsed: unknown = JSON.parse(stored);
+		return Array.isArray(parsed) ? parsed.filter(isFeedbackEntry) : [];
 	} catch {
 		return [];
 	}
@@ -47,6 +61,7 @@ function writeHistory({ entries }: { entries: FeedbackEntry[] }): void {
 }
 
 function useFeedback() {
+	const { locale } = useI18n();
 	const [entries, setEntries] = useState<FeedbackEntry[]>(readHistory);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,10 +92,14 @@ function useFeedback() {
 			setEntries(next);
 			writeHistory({ entries: next });
 			onSuccess();
-			toast.success("Feedback sent");
+			toast.success(locale === "zh-CN" ? "反馈已发送" : "Feedback sent");
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Failed to send feedback",
+				error instanceof Error
+					? error.message
+					: locale === "zh-CN"
+						? "发送反馈失败"
+						: "Failed to send feedback",
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -92,12 +111,13 @@ function useFeedback() {
 
 export function FeedbackPopover() {
 	const [open, setOpen] = useState(false);
+	const { locale } = useI18n();
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button variant="outline" className="h-8">
-					Send feedback
+					{locale === "zh-CN" ? "发送反馈" : "Send feedback"}
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-80 p-0">
@@ -110,12 +130,14 @@ export function FeedbackPopover() {
 type View = "compose" | "history";
 
 function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
+	const { locale } = useI18n();
 	const { entries, isSubmitting, submit } = useFeedback();
 	const [view, setView] = useState<View>("compose");
 
 	const form = useForm<FeedbackFormValues>({
 		defaultValues: { message: "" },
 	});
+	const message = useWatch({ control: form.control, name: "message" }) ?? "";
 
 	async function handleSubmit(values: FeedbackFormValues) {
 		await submit({
@@ -148,7 +170,7 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 						onClick={() => setView("compose")}
 						className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
 					>
-						← Back
+						{locale === "zh-CN" ? "← 返回" : "← Back"}
 					</button>
 				</div>
 			</div>
@@ -165,10 +187,14 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 						render={({ field }) => (
 							<FormItem>
 								<FormControl>
-									<Textarea
-										placeholder="Thoughts, bugs, ideas..."
-										className="min-h-[7rem] text-sm p-3 bg-background shadow-none border-none! resize-none"
-										{...field}
+								<Textarea
+									placeholder={
+										locale === "zh-CN"
+											? "想法、问题、建议..."
+											: "Thoughts, bugs, ideas..."
+									}
+									className="min-h-[7rem] text-sm p-3 bg-background shadow-none border-none! resize-none"
+									{...field}
 									/>
 								</FormControl>
 							</FormItem>
@@ -188,22 +214,22 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 							<span />
 						)}
 						<div className="flex gap-2">
-							{!form.watch("message").trim() && (
+							{!message.trim() && (
 								<Button
 									type="button"
 									variant="outline"
 									size="sm"
 									onClick={onClose}
 								>
-									Cancel
+									{locale === "zh-CN" ? "取消" : "Cancel"}
 								</Button>
 							)}
 							<Button
 								type="submit"
 								size="sm"
-								disabled={isSubmitting || !form.watch("message").trim()}
+								disabled={isSubmitting || !message.trim()}
 							>
-								{isSubmitting ? <Spinner /> : "Send"}
+								{isSubmitting ? <Spinner /> : locale === "zh-CN" ? "发送" : "Send"}
 							</Button>
 						</div>
 					</div>
@@ -213,29 +239,40 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 	);
 }
 
-function relativeDate(iso: string): string {
+function relativeDate({
+	iso,
+	locale,
+}: {
+	iso: string;
+	locale: "zh-CN" | "en";
+}): string {
 	const diff = Date.now() - new Date(iso).getTime();
 	const mins = Math.floor(diff / 60_000);
-	if (mins < 1) return "just now";
-	if (mins < 60) return `${mins}m ago`;
+	if (mins < 1) return locale === "zh-CN" ? "刚刚" : "just now";
+	if (mins < 60) return locale === "zh-CN" ? `${mins} 分钟前` : `${mins}m ago`;
 	const hrs = Math.floor(mins / 60);
-	if (hrs < 24) return `${hrs}h ago`;
+	if (hrs < 24) return locale === "zh-CN" ? `${hrs} 小时前` : `${hrs}h ago`;
 	const days = Math.floor(hrs / 24);
-	if (days < 7) return `${days}d ago`;
-	return new Date(iso).toLocaleDateString(undefined, {
+	if (days < 7) return locale === "zh-CN" ? `${days} 天前` : `${days}d ago`;
+	return new Date(iso).toLocaleDateString(
+		locale === "zh-CN" ? "zh-CN" : undefined,
+		{
 		month: "short",
 		day: "numeric",
-	});
+		},
+	);
 }
 
 function FeedbackEntryItem({ entry }: { entry: FeedbackEntry }) {
+	const { locale } = useI18n();
+
 	return (
 		<div className="px-3 py-2.5">
 			<p className="text-sm text-muted-foreground leading-snug whitespace-pre-wrap break-words">
 				{entry.message}
 			</p>
 			<span className="mt-1 block text-[11px] text-muted-foreground/50">
-				{relativeDate(entry.createdAt)}
+				{relativeDate({ iso: entry.createdAt, locale })}
 			</span>
 		</div>
 	);

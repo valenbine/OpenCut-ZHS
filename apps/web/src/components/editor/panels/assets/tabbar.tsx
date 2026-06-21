@@ -10,15 +10,41 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/ui";
 import {
 	TAB_KEYS,
-	tabs,
 	useAssetsPanelStore,
 } from "@/components/editor/panels/assets/assets-panel-store";
+import { tabs } from "@/components/editor/panels/assets/assets-panel-store";
+import { useI18n } from "@/i18n/language-provider";
 
 export function TabBar() {
 	const { activeTab, setActiveTab } = useAssetsPanelStore();
+	const { locale } = useI18n();
 	const [showTopFade, setShowTopFade] = useState(false);
 	const [showBottomFade, setShowBottomFade] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const labels = {
+		"zh-CN": {
+			media: "媒体",
+			sounds: "音频",
+			text: "文字",
+			stickers: "贴纸",
+			effects: "特效",
+			transitions: "转场",
+			captions: "字幕",
+			adjustment: "调节",
+			settings: "设置",
+		},
+		en: {
+			media: "Media",
+			sounds: "Sounds",
+			text: "Text",
+			stickers: "Stickers",
+			effects: "Effects",
+			transitions: "Transitions",
+			captions: "Captions",
+			adjustment: "Adjustment",
+			settings: "Settings",
+		},
+	}[locale];
 
 	const checkScrollPosition = useCallback(() => {
 		const element = scrollRef.current;
@@ -53,13 +79,14 @@ export function TabBar() {
 			>
 				{TAB_KEYS.map((tabKey) => {
 					const tab = tabs[tabKey];
+					const label = labels[tabKey];
 					return (
 						<Tooltip key={tabKey} delayDuration={10}>
 							<TooltipTrigger asChild>
 								<Button
 									variant={activeTab === tabKey ? "secondary" : "ghost"}
 									size="icon"
-									aria-label={tab.label}
+									aria-label={label}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -77,7 +104,7 @@ export function TabBar() {
 								sideOffset={8}
 							>
 								<div className="text-foreground text-sm leading-none font-medium">
-									{tab.label}
+									{label}
 								</div>
 							</TooltipContent>
 						</Tooltip>

@@ -18,6 +18,7 @@ import {
 	snapToStep,
 } from "@/utils/math";
 import { cn } from "@/utils/ui";
+import { useI18n } from "@/i18n/language-provider";
 
 const HIT_AREA_HEIGHT_PX = 14;
 const TOOLTIP_OFFSET_PX = 10;
@@ -57,6 +58,7 @@ export function AudioVolumeLine({
 	trackId: string;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const surfaceRef = useRef<HTMLDivElement>(null);
 	const activePointerIdRef = useRef<number | null>(null);
 	const startVolumeRef = useRef(getElementVolume({ element }));
@@ -250,7 +252,7 @@ export function AudioVolumeLine({
 					onPointerUp={handlePointerUp}
 					onPointerCancel={handlePointerCancel}
 					onLostPointerCapture={handleLostPointerCapture}
-					title="Drag to adjust clip volume"
+					title={locale === "zh-CN" ? "拖动以调整片段音量" : "Drag to adjust clip volume"}
 				/>
 				{isDragging &&
 					tooltipClientPos &&

@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { BasePage } from "@/app/base-page";
-import Prose from "@/components/ui/prose";
-import { Separator } from "@/components/ui/separator";
+import { BlogPostShell } from "@/app/blog/[slug]/post-shell";
 import { getPosts, getSinglePost, processHtmlContent } from "@/blog/query";
-import type { Author, Post } from "@/blog/types";
+import type { Author } from "@/blog/types";
 
 type PageProps = {
 	params: Promise<{ slug: string }>;
@@ -72,64 +69,11 @@ export default async function BlogPostPage({ params }: PageProps) {
 	const html = await processHtmlContent({ html: data.post.content });
 
 	return (
-		<BasePage>
-			<PostHeader post={data.post} />
-			<Separator />
-			<PostContent html={html} />
-		</BasePage>
-	);
-}
-
-function PostHeader({ post }: { post: Post }) {
-	const formattedDate = new Date(post.publishedAt).toLocaleDateString("en-US", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
-
-	return (
-		<div className="flex flex-col items-center justify-center gap-8">
-			<PostMeta date={formattedDate} publishedAt={post.publishedAt} />
-			<PostTitle title={post.title} />
-			{post.coverImage && <PostCoverImage post={post} />}
-		</div>
-	);
-}
-
-function PostCoverImage({ post }: { post: Post }) {
-	return (
-		<div className="relative aspect-video overflow-hidden rounded-lg w-full mt-4">
-			<Image
-				src={post.coverImage}
-				alt={post.title}
-				loading="eager"
-				fill
-				className="rounded-lg object-cover"
-			/>
-		</div>
-	);
-}
-
-function PostMeta({ date, publishedAt }: { date: string; publishedAt: Date }) {
-	return (
-		<div className="flex items-center justify-center">
-			<time dateTime={publishedAt.toString()}>{date}</time>
-		</div>
-	);
-}
-
-function PostTitle({ title }: { title: string }) {
-	return (
-		<h1 className="text-5xl font-bold tracking-tight md:text-4xl text-center">
-			{title}
-		</h1>
-	);
-}
-
-function PostContent({ html }: { html: string }) {
-	return (
-		<section className="">
-			<Prose html={html} />
-		</section>
+		<BlogPostShell
+			title={data.post.title}
+			coverImage={data.post.coverImage}
+			publishedAt={new Date(data.post.publishedAt).toISOString()}
+			html={html}
+		/>
 	);
 }

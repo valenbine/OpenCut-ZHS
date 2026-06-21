@@ -1,10 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { RiDiscordFill, RiTwitterXLine } from "react-icons/ri";
 import { FaGithub } from "react-icons/fa6";
 import Image from "next/image";
 import { DEFAULT_LOGO_URL } from "@/site/brand";
 import { SOCIAL_LINKS } from "@/site/social";
-import { capitalizeFirstLetter } from "@/utils/string";
+import { useI18n } from "@/i18n/language-provider";
 
 type Category = "resources" | "company";
 
@@ -14,24 +16,32 @@ interface FooterLink {
 }
 
 type CategoryLinks = Record<Category, FooterLink[]>;
-
-const links: CategoryLinks = {
-	resources: [
-		{ label: "Roadmap", href: "/roadmap" },
-		{ label: "Changelog", href: "/changelog" },
-		{ label: "Blog", href: "/blog" },
-		{ label: "Privacy", href: "/privacy" },
-		{ label: "Terms of use", href: "/terms" },
-	],
-	company: [
-		{ label: "Contributors", href: "/contributors" },
-		{ label: "Sponsors", href: "/sponsors" },
-		{ label: "Brand", href: "/brand" },
-		{ label: "About", href: `${SOCIAL_LINKS.github}/blob/main/README.md` },
-	],
-};
+const categories: Category[] = ["resources", "company"];
 
 export function Footer() {
+	const { copy } = useI18n();
+
+	const links: CategoryLinks = {
+		resources: [
+			{ label: copy.footer.links.roadmap, href: "/roadmap" },
+			{ label: copy.footer.links.changelog, href: "/changelog" },
+			{ label: copy.footer.links.blog, href: "/blog" },
+			{ label: copy.footer.links.privacy, href: "/privacy" },
+			{ label: copy.footer.links.terms, href: "/terms" },
+		],
+		company: [
+			{ label: copy.footer.links.contributors, href: "/contributors" },
+			{ label: copy.footer.links.sponsors, href: "/sponsors" },
+			{ label: copy.footer.links.brand, href: "/brand" },
+			{ label: copy.footer.links.about, href: `${SOCIAL_LINKS.github}/blob/main/README.md` },
+		],
+	};
+
+	const categoryLabels: Record<Category, string> = {
+		resources: copy.footer.resources,
+		company: copy.footer.company,
+	};
+
 	return (
 		<footer className="bg-background border-t">
 			<div className="mx-auto max-w-5xl px-8 py-10">
@@ -49,7 +59,7 @@ export function Footer() {
 							<span className="text-lg font-bold">OpenCut</span>
 						</div>
 						<p className="text-muted-foreground mb-5 text-sm md:text-left">
-							The privacy-first video editor that feels simple to use.
+							{copy.footer.description}
 						</p>
 						<div className="flex justify-start gap-3">
 							<Link
@@ -80,10 +90,10 @@ export function Footer() {
 					</div>
 
 					<div className="flex items-start justify-start gap-12 py-2">
-						{(Object.keys(links) as Category[]).map((category) => (
+						{categories.map((category) => (
 							<div key={category} className="flex flex-col gap-2">
 								<h3 className="text-foreground font-semibold">
-									{capitalizeFirstLetter({ string: category })}
+									{categoryLabels[category]}
 								</h3>
 								<ul className="space-y-2 text-sm">
 									{links[category].map((link) => (
@@ -113,9 +123,7 @@ export function Footer() {
 				{/* Bottom Section */}
 				<div className="flex flex-col items-start justify-between gap-4 pt-2 md:flex-row">
 					<div className="text-muted-foreground flex items-center gap-4 text-sm">
-						<span>
-							© {new Date().getFullYear()} OpenCut, All Rights Reserved
-						</span>
+						<span>{copy.footer.copyright({ year: new Date().getFullYear() })}</span>
 					</div>
 				</div>
 			</div>

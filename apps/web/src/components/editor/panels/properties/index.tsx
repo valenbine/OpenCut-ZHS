@@ -14,13 +14,68 @@ import { usePropertiesStore } from "./stores/properties-store";
 import { getPropertiesConfig } from "./registry";
 import { cn } from "@/utils/ui";
 import { EmptyView } from "./empty-view";
+import { useI18n } from "@/i18n/language-provider";
 
 export function PropertiesPanel() {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	useEditor((e) => e.scenes.getActiveSceneOrNull());
 	useEditor((e) => e.media.getAssets());
 	const { selectedElements } = useElementSelection();
 	const { activeTabPerType, setActiveTab } = usePropertiesStore();
+	const labelsByLocale = {
+		"zh-CN": {
+			transform: "变换",
+			blending: "混合",
+			audio: "音频",
+			speed: "速度",
+			masks: "蒙版",
+			effects: "特效",
+			text: "文字",
+			graphic: "图形",
+			multiSelected: ({ count }: { count: number }) => `已选择 ${count} 个元素`,
+		},
+		en: {
+			transform: "Transform",
+			blending: "Blending",
+			audio: "Audio",
+			speed: "Speed",
+			masks: "Masks",
+			effects: "Effects",
+			text: "Text",
+			graphic: "Graphic",
+			multiSelected: ({ count }: { count: number }) => `${count} elements selected.`,
+		},
+	} as const;
+	const labels = labelsByLocale[locale];
+	const getTabLabel = ({
+		tabId,
+		fallback,
+	}: {
+		tabId: string;
+		fallback: string;
+	}) => {
+		switch (tabId) {
+			case "transform":
+				return labels.transform;
+			case "blending":
+				return labels.blending;
+			case "audio":
+				return labels.audio;
+			case "speed":
+				return labels.speed;
+			case "masks":
+				return labels.masks;
+			case "effects":
+				return labels.effects;
+			case "text":
+				return labels.text;
+			case "graphic":
+				return labels.graphic;
+			default:
+				return fallback;
+		}
+	};
 
 	if (selectedElements.length === 0) {
 		return (
@@ -34,7 +89,7 @@ export function PropertiesPanel() {
 		return (
 			<div className="panel bg-background flex h-full flex-col items-center justify-center overflow-hidden rounded-sm border">
 				<p className="text-muted-foreground text-sm">
-					{selectedElements.length} elements selected.0
+					{labels.multiSelected({ count: selectedElements.length })}
 				</p>
 			</div>
 		);
@@ -65,7 +120,9 @@ export function PropertiesPanel() {
 		<div className="panel bg-background flex h-full overflow-hidden rounded-sm border">
 			<TooltipProvider delayDuration={0}>
 				<div className="flex shrink-0 flex-col gap-0.5 border-r p-1 scrollbar-hidden overflow-y-auto">
-					{visibleTabs.map((tab) => (
+					{visibleTabs.map((tab) => {
+						const label = getTabLabel({ tabId: tab.id, fallback: tab.label });
+						return (
 						<Tooltip key={tab.id}>
 							<TooltipTrigger asChild>
 								<Button
@@ -77,7 +134,7 @@ export function PropertiesPanel() {
 											tabId: tab.id,
 										})
 									}
-									aria-label={tab.label}
+									aria-label={label}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -87,9 +144,10 @@ export function PropertiesPanel() {
 									{tab.icon}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent side="right">{tab.label}</TooltipContent>
+							<TooltipContent side="right">{label}</TooltipContent>
 						</Tooltip>
-					))}
+						);
+					})}
 				</div>
 			</TooltipProvider>
 			<ScrollArea className="flex-1 scrollbar-hidden">

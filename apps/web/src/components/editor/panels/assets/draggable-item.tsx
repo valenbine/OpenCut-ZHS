@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useI18n } from "@/i18n/language-provider";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -21,6 +22,7 @@ export interface DraggableItemProps {
 	dragData: TimelineDragData;
 	onDragStart?: ({ e }: { e: React.DragEvent }) => void;
 	onAddToTimeline?: ({ currentTime }: { currentTime: MediaTime }) => void;
+	addToTimelineLabel?: string;
 	aspectRatio?: number;
 	className?: string;
 	containerClassName?: string;
@@ -37,6 +39,7 @@ export function DraggableItem({
 	dragData,
 	onDragStart,
 	onAddToTimeline,
+	addToTimelineLabel,
 	aspectRatio = 16 / 9,
 	className = "",
 	containerClassName,
@@ -121,6 +124,7 @@ export function DraggableItem({
 								<PlusButton
 									className="opacity-0 group-hover:opacity-100"
 									onClick={handleAddToTimeline}
+									tooltipText={addToTimelineLabel}
 								/>
 							)}
 						</AspectRatio>
@@ -187,7 +191,7 @@ export function DraggableItem({
 								{shouldShowPlusOnDrag && (
 									<PlusButton
 										onClick={handleAddToTimeline}
-										tooltipText="Add to timeline or drag to position"
+										tooltipText={addToTimelineLabel}
 									/>
 								)}
 							</AspectRatio>
@@ -208,6 +212,10 @@ function PlusButton({
 	onClick?: () => void;
 	tooltipText?: string;
 }) {
+	const { locale } = useI18n();
+	const localizedTooltip =
+		tooltipText ?? (locale === "zh-CN" ? "添加到时间线" : "Add to timeline");
+
 	const button = (
 		<Button
 			size="icon"
@@ -220,7 +228,7 @@ function PlusButton({
 				e.stopPropagation();
 				onClick?.();
 			}}
-			title={tooltipText}
+			title={localizedTooltip}
 		>
 			<Plus />
 		</Button>
@@ -231,7 +239,7 @@ function PlusButton({
 			<Tooltip>
 				<TooltipTrigger asChild>{button}</TooltipTrigger>
 				<TooltipContent>
-					<p>{tooltipText}</p>
+					<p>{localizedTooltip}</p>
 				</TooltipContent>
 			</Tooltip>
 		);

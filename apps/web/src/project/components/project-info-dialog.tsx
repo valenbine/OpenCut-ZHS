@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	Dialog,
 	DialogBody,
@@ -10,6 +12,7 @@ import type { TProjectMetadata } from "@/project/types";
 import { formatDate } from "@/utils/date";
 import { formatTimecode, mediaTimeToSeconds } from "opencut-wasm";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 
 function InfoRow({
 	label,
@@ -35,6 +38,7 @@ export function ProjectInfoDialog({
 	onOpenChange: (open: boolean) => void;
 	project: TProjectMetadata;
 }) {
+	const { copy } = useI18n();
 	const durationSeconds = mediaTimeToSeconds({ time: project.duration });
 	const durationFormatted =
 		project.duration > 0
@@ -51,17 +55,17 @@ export function ProjectInfoDialog({
 				</DialogHeader>
 
 				<DialogBody className="flex flex-col">
-					<InfoRow label="Duration" value={durationFormatted} />
+					<InfoRow label={copy.dialogs.projectInfo.duration} value={durationFormatted} />
 					<InfoRow
-						label="Created"
+						label={copy.dialogs.projectInfo.created}
 						value={formatDate({ date: project.createdAt })}
 					/>
 					<InfoRow
-						label="Modified"
+						label={copy.dialogs.projectInfo.modified}
 						value={formatDate({ date: project.updatedAt })}
 					/>
 					<InfoRow
-						label="Project ID"
+						label={copy.dialogs.projectInfo.projectId}
 						value={
 							<code className="text-xs bg-muted px-1.5 py-0.5 rounded">
 								{project.id.slice(0, 8)}
@@ -71,9 +75,9 @@ export function ProjectInfoDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Close
+						{copy.common.close}
 					</Button>
-					<Button onClick={() => onOpenChange(false)}>Done</Button>
+					<Button onClick={() => onOpenChange(false)}>{copy.common.done}</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

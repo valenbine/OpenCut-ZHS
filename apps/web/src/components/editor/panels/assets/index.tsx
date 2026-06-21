@@ -10,9 +10,20 @@ import { SoundsView } from "@/sounds/components/assets-view";
 import { StickersView } from "@/stickers/components/assets-view";
 import { TextView } from "@/text/components/assets-view";
 import { EffectsView } from "@/effects/components/assets-view";
+import { useI18n } from "@/i18n/language-provider";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
+	const { locale } = useI18n();
+	const copy = locale === "zh-CN"
+		? {
+			transitions: "转场面板即将上线...",
+			adjustment: "调节面板即将上线...",
+		}
+		: {
+			transitions: "Transitions view coming soon...",
+			adjustment: "Adjustment view coming soon...",
+		};
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
@@ -21,15 +32,11 @@ export function AssetsPanel() {
 		stickers: <StickersView />,
 		effects: <EffectsView />,
 		transitions: (
-			<div className="text-muted-foreground p-4">
-				Transitions view coming soon...
-			</div>
+			<div className="text-muted-foreground p-4">{copy.transitions}</div>
 		),
 		captions: <Captions />,
 		adjustment: (
-			<div className="text-muted-foreground p-4">
-				Adjustment view coming soon...
-			</div>
+			<div className="text-muted-foreground p-4">{copy.adjustment}</div>
 		),
 		settings: <SettingsView />,
 	};

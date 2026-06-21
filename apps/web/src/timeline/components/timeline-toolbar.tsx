@@ -49,6 +49,72 @@ import { OcRippleIcon } from "@/components/icons";
 import { GraphEditorPopover } from "./graph-editor/popover";
 import { PopoverTrigger } from "@/components/ui/popover";
 import { useGraphEditorController } from "./graph-editor/use-controller";
+import { useI18n } from "@/i18n/language-provider";
+import type { GraphEditorUnavailableReason } from "./graph-editor/session";
+
+function getGraphEditorUnavailableMessage({
+	locale,
+	reason,
+}: {
+	locale: string;
+	reason: GraphEditorUnavailableReason;
+}): string {
+	if (locale !== "zh-CN") {
+		switch (reason) {
+			case "no-keyframe-selected":
+				return "Select a keyframe to edit its curve.";
+			case "multiple-keyframes-selected":
+				return "Select at most two adjacent keyframes per property.";
+			case "selected-keyframes-span-multiple-elements":
+				return "Selected keyframes must be on the same element.";
+			case "selected-keyframes-are-not-adjacent":
+				return "Selected keyframes must be adjacent on each property.";
+			case "selected-properties-have-no-shared-component":
+				return "Selected properties do not share a graph-editable channel.";
+			case "selected-element-missing":
+				return "The selected keyframe could not be resolved.";
+			case "selected-element-has-no-animations":
+				return "The selected keyframe has no editable graph.";
+			case "selected-keyframe-has-no-scalar-channel":
+				return "The selected keyframe has no editable graph channel.";
+			case "selected-keyframe-missing-on-channel":
+				return "The selected keyframe is not editable as a graph segment.";
+			case "selected-keyframe-has-no-next-segment":
+				return "Select a keyframe that has an outgoing segment.";
+			case "selected-segment-is-hold":
+				return "Hold segments have a fixed value; easing has no effect here.";
+			case "selected-segment-is-flat":
+				return "Cannot edit a segment where both keyframes are at the same time.";
+		}
+	}
+
+	switch (reason) {
+		case "no-keyframe-selected":
+			return "请选择一个关键帧以编辑曲线。";
+		case "multiple-keyframes-selected":
+			return "每个属性最多选择两个相邻关键帧。";
+		case "selected-keyframes-span-multiple-elements":
+			return "所选关键帧需要位于同一个元素上。";
+		case "selected-keyframes-are-not-adjacent":
+			return "每个属性上的所选关键帧需要彼此相邻。";
+		case "selected-properties-have-no-shared-component":
+			return "所选属性没有共享的可编辑曲线通道。";
+		case "selected-element-missing":
+			return "无法解析所选关键帧。";
+		case "selected-element-has-no-animations":
+			return "所选关键帧没有可编辑的曲线。";
+		case "selected-keyframe-has-no-scalar-channel":
+			return "所选关键帧没有可编辑的曲线通道。";
+		case "selected-keyframe-missing-on-channel":
+			return "所选关键帧当前无法作为曲线片段编辑。";
+		case "selected-keyframe-has-no-next-segment":
+			return "请选择一个带后续片段的关键帧。";
+		case "selected-segment-is-hold":
+			return "保持片段的值固定，缓动在这里不会生效。";
+		case "selected-segment-is-flat":
+			return "两个关键帧位于同一时间点时无法编辑该片段。";
+	}
+}
 
 export function TimelineToolbar({
 	zoomLevel,
@@ -86,6 +152,7 @@ export function TimelineToolbar({
 }
 
 function ToolbarLeftSection() {
+	const { locale } = useI18n();
 	const editor = useEditor();
 	const mediaAssets = useEditor((currentEditor) =>
 		currentEditor.media.getAssets(),
@@ -113,6 +180,13 @@ function ToolbarLeftSection() {
 
 		return mediaAssets.find((asset) => asset.id === element.mediaId) ?? null;
 	})();
+	const graphEditorMessage =
+		graphEditor.state.status === "unavailable"
+			? getGraphEditorUnavailableMessage({
+				locale,
+				reason: graphEditor.state.reason,
+			})
+			: graphEditor.state.message;
 	const canToggleSelectedSourceAudio =
 		!!selectedElement &&
 		canToggleSourceAudio(selectedElement.element, selectedMediaAsset);
@@ -121,7 +195,9 @@ function ToolbarLeftSection() {
 			? getSourceAudioActionLabel({
 					element: selectedElement.element,
 				})
-			: "Extract audio";
+			: locale === "zh-CN"
+				? "提取音频"
+				: "Extract audio";
 	const isSelectedSourceAudioSeparated =
 		selectedElement?.element.type === "video" &&
 		isSourceAudioSeparated({
@@ -144,19 +220,19 @@ function ToolbarLeftSection() {
 			<TooltipProvider delayDuration={500}>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
-					tooltip="Split element"
+					tooltip={locale === "zh-CN" ? "拆分元素" : "Split element"}
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignLeftIcon} />}
-					tooltip="Split left"
+					tooltip={locale === "zh-CN" ? "向左拆分" : "Split left"}
 					onClick={({ event }) => handleAction({ action: "split-left", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignRightIcon} />}
-					tooltip="Split right"
+					tooltip={locale === "zh-CN" ? "向右拆分" : "Split right"}
 					onClick={({ event }) =>
 						handleAction({ action: "split-right", event })
 					}
@@ -177,7 +253,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Copy01Icon} />}
-					tooltip="Duplicate element"
+					tooltip={locale === "zh-CN" ? "复制元素" : "Duplicate element"}
 					onClick={({ event }) =>
 						handleAction({ action: "duplicate-selected", event })
 					}
@@ -185,14 +261,14 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={SnowIcon} />}
-					tooltip="Freeze frame (coming soon)"
+					tooltip={locale === "zh-CN" ? "定格帧（即将上线）" : "Freeze frame (coming soon)"}
 					disabled={true}
 					onClick={({ event: _event }) => {}}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Delete02Icon} />}
-					tooltip="Delete element"
+					tooltip={locale === "zh-CN" ? "删除元素" : "Delete element"}
 					onClick={({ event }) =>
 						handleAction({ action: "delete-selected", event })
 					}
@@ -204,7 +280,7 @@ function ToolbarLeftSection() {
 					<ToolbarButton
 						icon={<HugeiconsIcon icon={Bookmark02Icon} />}
 						isActive={isCurrentlyBookmarked}
-						tooltip={isCurrentlyBookmarked ? "Remove bookmark" : "Add bookmark"}
+						tooltip={isCurrentlyBookmarked ? (locale === "zh-CN" ? "移除书签" : "Remove bookmark") : (locale === "zh-CN" ? "添加书签" : "Add bookmark")}
 						onClick={({ event }) =>
 							handleAction({ action: "toggle-bookmark", event })
 						}
@@ -219,7 +295,7 @@ function ToolbarLeftSection() {
 							? graphEditor.state.cubicBezier
 							: null
 					}
-					message={graphEditor.state.message}
+					message={graphEditorMessage}
 					componentOptions={graphEditor.state.componentOptions}
 					activeComponentKey={graphEditor.state.activeComponentKey}
 					onActiveComponentKeyChange={graphEditor.onActiveComponentKeyChange}
@@ -247,12 +323,17 @@ function ToolbarLeftSection() {
 
 function SceneSelector() {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const currentScene = editor.scenes.getActiveScene();
+	const currentSceneLabel =
+		currentScene?.name === "Main Scene" && locale === "zh-CN"
+			? "主场景"
+			: currentScene?.name;
 
 	return (
 		<div>
 			<SplitButton className="border-foreground/10 border">
-				<SplitButtonLeft>{currentScene?.name || "No Scene"}</SplitButtonLeft>
+				<SplitButtonLeft>{currentSceneLabel || (locale === "zh-CN" ? "无场景" : "No Scene")}</SplitButtonLeft>
 				<SplitButtonSeparator />
 				<ScenesView>
 					<SplitButtonRight onClick={() => {}}>
@@ -275,6 +356,7 @@ function ToolbarRightSection({
 	onZoomChange: (zoom: number) => void;
 	onZoom: (options: { direction: "in" | "out" }) => void;
 }) {
+	const { locale } = useI18n();
 	const snappingEnabled = useTimelineStore((s) => s.snappingEnabled);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
 	const toggleSnapping = useTimelineStore((s) => s.toggleSnapping);
@@ -286,14 +368,14 @@ function ToolbarRightSection({
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={MagnetIcon} />}
 					isActive={snappingEnabled}
-					tooltip="Auto snapping"
+					tooltip={locale === "zh-CN" ? "自动吸附" : "Auto snapping"}
 					onClick={() => toggleSnapping()}
 				/>
 
 				<ToolbarButton
 					icon={<OcRippleIcon size={24} className="scale-110" />}
 					isActive={rippleEditingEnabled}
-					tooltip="Ripple editing"
+					tooltip={locale === "zh-CN" ? "波纹编辑" : "Ripple editing"}
 					onClick={() => toggleRippleEditing()}
 				/>
 			</TooltipProvider>

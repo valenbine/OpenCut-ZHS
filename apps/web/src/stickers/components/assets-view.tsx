@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 import { resolveStickerIntrinsicSize } from "@/stickers";
 import {
 	buildGraphicElement,
@@ -31,7 +32,34 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+function getStickerCategoryLabel({
+	category,
+	locale,
+}: {
+	category: StickerCategory;
+	locale: string;
+}) {
+	if (locale !== "zh-CN") {
+		return STICKER_CATEGORIES[category];
+	}
+
+	return {
+		all: "全部",
+		flags: "旗帜",
+		shapes: "形状",
+	}[category];
+}
+
+function toStickerCategory(value: string): StickerCategory | null {
+	if (value === "all" || value === "flags" || value === "shapes") {
+		return value;
+	}
+
+	return null;
+}
+
 export function StickersView() {
+	const { locale } = useI18n();
 	const {
 		browseContent,
 		browseStickers,
@@ -55,7 +83,7 @@ export function StickersView() {
 				<Input
 					size="sm"
 					variant="default"
-					placeholder="Search..."
+					placeholder={locale === "zh-CN" ? "搜索..." : "Search..."}
 					value={searchQuery}
 					onChange={(e) => {
 						setSearchQuery({ query: e.target.value });
@@ -74,17 +102,27 @@ export function StickersView() {
 			<Tabs
 				value={selectedCategory}
 				onValueChange={(value) => {
-					setSelectedCategory({ category: value as StickerCategory });
+					const category = toStickerCategory(value);
+					if (category) {
+						setSelectedCategory({ category });
+					}
 				}}
 				variant="underline"
 				className="mt-2 flex min-h-0 flex-1 flex-col"
 			>
-				<TabsList aria-label="Sticker categories">
-					{Object.entries(STICKER_CATEGORIES).map(([key, label]) => (
-						<TabsTrigger key={key} value={key}>
-							{label}
-						</TabsTrigger>
-					))}
+			<TabsList aria-label={locale === "zh-CN" ? "贴纸分类" : "Sticker categories"}>
+					{Object.entries(STICKER_CATEGORIES).map(([key]) => {
+						const category = toStickerCategory(key);
+						if (!category) {
+							return null;
+						}
+
+						return (
+							<TabsTrigger key={key} value={key}>
+								{getStickerCategoryLabel({ category, locale })}
+							</TabsTrigger>
+						);
+					})}
 				</TabsList>
 				<div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4">
 					<StickersContentView />
@@ -134,6 +172,7 @@ function StickerRow({ items }: { items: StickerData[] }) {
 }
 
 function EmptyView({ message }: { message: string }) {
+	const { locale } = useI18n();
 	return (
 		<div className="bg-background flex h-full flex-col items-center justify-center gap-3 p-4">
 			<HugeiconsIcon
@@ -141,7 +180,7 @@ function EmptyView({ message }: { message: string }) {
 				className="text-muted-foreground size-10"
 			/>
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-lg font-medium">No stickers found</p>
+				<p className="text-lg font-medium">{locale === "zh-CN" ? "未找到贴纸" : "No stickers found"}</p>
 				<p className="text-muted-foreground text-sm text-balance">{message}</p>
 			</div>
 		</div>
@@ -172,6 +211,7 @@ function RegionBanner({ region }: { region: string }) {
 }
 
 function StickersContentView() {
+	const { locale } = useI18n();
 	const {
 		browseContent,
 		clearRecentStickers,
@@ -205,7 +245,7 @@ function StickersContentView() {
 					{isRegionSearch && <RegionBanner region={regionLabel} />}
 					<div className="flex items-center justify-between">
 						<span className="text-muted-foreground text-sm">
-							{searchResults.total} results
+							{locale === "zh-CN" ? `${searchResults.total} 个结果` : `${searchResults.total} results`}
 						</span>
 					</div>
 					<StickerGrid items={searchResults.items} />
@@ -215,7 +255,7 @@ function StickersContentView() {
 
 		// "all" tab search — sections are in browseContent, fall through to section rendering below
 		if (selectedCategory !== "all" && searchQuery) {
-			return <EmptyView message={`No stickers found for "${searchQuery}"`} />;
+			return <EmptyView message={locale === "zh-CN" ? `没有找到“${searchQuery}”相关贴纸` : `No stickers found for "${searchQuery}"`} />;
 		}
 	}
 
@@ -228,15 +268,24 @@ function StickersContentView() {
 	}
 
 	if (!browseContent?.sections.length) {
-		const categoryLabel = STICKER_CATEGORIES[selectedCategory];
+		const categoryLabel = getStickerCategoryLabel({
+			category: selectedCategory,
+			locale,
+		});
 		return (
 			<EmptyView
 				message={
 					viewMode === "search"
-						? `No stickers found for "${searchQuery}"`
+						? locale === "zh-CN"
+							? `没有找到“${searchQuery}”相关贴纸`
+							: `No stickers found for "${searchQuery}"`
 						: selectedCategory === "all"
-							? "No stickers available yet."
-							: `No stickers available in ${categoryLabel.toLowerCase()} yet.`
+							? locale === "zh-CN"
+								? "暂时还没有贴纸。"
+								: "No stickers available yet."
+							: locale === "zh-CN"
+								? `${categoryLabel}分类下暂时还没有贴纸。`
+								: `No stickers available in ${categoryLabel.toLowerCase()} yet.`
 				}
 			/>
 		);
@@ -267,6 +316,7 @@ function StickerSection({
 	onClearRecent: () => void;
 	onSeeAll: (category: StickerCategory) => void;
 }) {
+	const { locale } = useI18n();
 	const hasHeader =
 		Boolean(section.title) || section.id === "recent" || section.action;
 
@@ -288,7 +338,7 @@ function StickerSection({
 								size="sm"
 								className="h-auto gap-1 p-0 text-xs text-muted-foreground"
 							>
-								Clear
+								{locale === "zh-CN" ? "清空" : "Clear"}
 							</Button>
 						)}
 
@@ -298,10 +348,15 @@ function StickerSection({
 								size="sm"
 								className="h-auto gap-1 p-0 text-xs text-primary"
 								onClick={() => {
-									onSeeAll(section.action?.category as StickerCategory);
+									if (section.action?.category) {
+										const category = toStickerCategory(section.action.category);
+										if (category) {
+											onSeeAll(category);
+										}
+									}
 								}}
 							>
-								See all
+								{locale === "zh-CN" ? "查看全部" : "See all"}
 							</Button>
 						)}
 					</div>
@@ -328,6 +383,7 @@ function StickerItem({
 	shouldCapSize = false,
 	containerClassName,
 }: StickerItemProps) {
+	const { locale } = useI18n();
 	const editor = useEditor();
 	const { addToRecentStickers } = useStickersStore();
 	const [isAdding, setIsAdding] = useState(false);
@@ -338,7 +394,11 @@ function StickerItem({
 			return;
 		}
 
-		setHasImageError(false);
+		const frameId = requestAnimationFrame(() => {
+			setHasImageError(false);
+		});
+
+		return () => cancelAnimationFrame(frameId);
 	}, [item.id]);
 
 	const displayName = item.name;
@@ -380,7 +440,7 @@ function StickerItem({
 			addToRecentStickers({ stickerId: item.id });
 		} catch (error) {
 			console.error("Failed to add sticker:", error);
-			toast.error("Failed to add sticker to timeline");
+			toast.error(locale === "zh-CN" ? "添加贴纸到时间线失败" : "Failed to add sticker to timeline");
 		} finally {
 			setIsAdding(false);
 		}

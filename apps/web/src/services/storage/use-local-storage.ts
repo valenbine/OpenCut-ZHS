@@ -49,9 +49,14 @@ export function useLocalStorage<T>({
 					: nextValue;
 
 			valueRef.current = resolvedValue;
+			try {
+				localStorage.setItem(key, JSON.stringify(resolvedValue));
+			} catch {
+				// localstorage might be full or disabled
+			}
 			setValue(resolvedValue);
 		},
-		[],
+		[key],
 	);
 
 	return [value, setValueWithCallback, isReady];

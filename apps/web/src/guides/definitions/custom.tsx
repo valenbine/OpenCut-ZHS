@@ -1,14 +1,19 @@
+"use client";
+
 import { PlusSignIcon, RulerIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 import type { GuideDefinition } from "@/guides/types";
 
 function CustomGuideOptions() {
+	const { locale } = useI18n();
+
 	return (
 		<div className="flex gap-2">
 			<Button variant="outline" size="sm" className="flex-1">
 				<HugeiconsIcon icon={PlusSignIcon} />
-				Add guide line
+				{locale === "zh-CN" ? "添加参考线" : "Add guide line"}
 			</Button>
 		</div>
 	);

@@ -18,6 +18,7 @@ import { patternCraftGradients } from "@/data/colors/pattern-craft";
 import { colors } from "@/data/colors/solid";
 import { syntaxUIGradients } from "@/data/colors/syntax-ui";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 import { effectPreviewService } from "@/services/renderer/effect-preview";
 import { cn } from "@/utils/ui";
 
@@ -29,6 +30,29 @@ const BLUR_PREVIEW_UNIFORM_DIMENSIONS = {
 const CUSTOM_COLOR_SWATCH_BACKGROUND =
 	"conic-gradient(from 180deg at 50% 50%, #ff5e5e 0deg, #ffb35e 55deg, #fff26b 110deg, #6bff8f 165deg, #5ee7ff 220deg, #6f7cff 275deg, #d76bff 330deg, #ff5e9b 360deg)";
 
+function localizeBlurLabel({
+	label,
+	locale,
+}: {
+	label: string;
+	locale: string;
+}): string {
+	if (locale !== "zh-CN") {
+		return label;
+	}
+
+	switch (label) {
+		case "Light":
+			return "轻度";
+		case "Medium":
+			return "中度";
+		case "Heavy":
+			return "强烈";
+		default:
+			return label;
+	}
+}
+
 const BlurPreview = memo(
 	({
 		blur,
@@ -39,7 +63,9 @@ const BlurPreview = memo(
 		isSelected: boolean;
 		onSelect: () => void;
 	}) => {
+		const { locale } = useI18n();
 		const canvasRef = useRef<HTMLCanvasElement>(null);
+		const blurLabel = localizeBlurLabel({ label: blur.label, locale });
 
 		useEffect(() => {
 			const renderPreview = () => {
@@ -67,7 +93,7 @@ const BlurPreview = memo(
 				)}
 				onClick={onSelect}
 				type="button"
-				aria-label={`Select ${blur.label} blur`}
+				aria-label={locale === "zh-CN" ? `选择${blurLabel}模糊` : `Select ${blur.label} blur`}
 			>
 				<canvas
 					ref={canvasRef}
@@ -75,7 +101,7 @@ const BlurPreview = memo(
 				/>
 				<div className="absolute right-1 bottom-1 left-1 text-center">
 					<span className="rounded bg-black/50 px-1 text-xs text-white">
-						{blur.label}
+						{blurLabel}
 					</span>
 				</div>
 			</button>
@@ -99,6 +125,7 @@ const BackgroundPreviews = memo(
 		onSelect: (bg: string) => void;
 		useBackgroundColor?: boolean;
 	}) => {
+		const { locale } = useI18n();
 		return useMemo(
 			() =>
 				backgrounds.map((bg) => (
@@ -122,13 +149,14 @@ const BackgroundPreviews = memo(
 						}
 						onClick={() => onSelect(bg)}
 						type="button"
-						aria-label={`Select background ${bg}`}
+						aria-label={locale === "zh-CN" ? `选择背景 ${bg}` : `Select background ${bg}`}
 					/>
 				)),
 			[
 				backgrounds,
 				isColorBackground,
 				currentBackgroundColor,
+				locale,
 				onSelect,
 				useBackgroundColor,
 			],
@@ -149,6 +177,7 @@ function CustomColorPreview({
 	onPreview: (color: string) => void;
 	onCommit: (color: string) => void;
 }) {
+	const { locale } = useI18n();
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
@@ -158,7 +187,7 @@ function CustomColorPreview({
 						isSelected && "border-primary border-2",
 					)}
 					type="button"
-					aria-label="Pick a custom background color"
+					aria-label={locale === "zh-CN" ? "选择自定义背景颜色" : "Pick a custom background color"}
 				>
 					<span
 						className="absolute inset-0"
@@ -187,6 +216,7 @@ const COLOR_SECTIONS = [
 
 export function BackgroundContent() {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const activeProject = useEditor((e) => e.project.getActive());
 
 	const handleBlurSelect = useCallback(
@@ -222,12 +252,11 @@ export function BackgroundContent() {
 	const isColorBackground = activeProject.settings.background.type === "color";
 
 	const currentBlurIntensity = isBlurBackground
-		? (activeProject.settings.background as { blurIntensity: number })
-				.blurIntensity
+		? activeProject.settings.background.blurIntensity
 		: DEFAULT_BACKGROUND_BLUR_INTENSITY;
 
 	const currentBackgroundColor = isColorBackground
-		? (activeProject.settings.background as { color: string }).color
+		? activeProject.settings.background.color
 		: DEFAULT_BACKGROUND_COLOR;
 
 	const hasPresetColorMatch = colors.some(
@@ -254,6 +283,19 @@ export function BackgroundContent() {
 		[isBlurBackground, currentBlurIntensity, handleBlurSelect],
 	);
 
+	const sectionTitles =
+		locale === "zh-CN"
+			? {
+				colors: "颜色",
+				"pattern-craft": "图案工坊",
+				"syntax-ui": "语法界面",
+			}
+			: {
+				colors: "Colors",
+				"pattern-craft": "Pattern craft",
+				"syntax-ui": "Syntax UI",
+			};
+
 	return (
 		<div className="flex flex-col">
 			<Section
@@ -263,7 +305,7 @@ export function BackgroundContent() {
 				showTopBorder={false}
 			>
 				<SectionHeader>
-					<SectionTitle>Blur</SectionTitle>
+					<SectionTitle>{locale === "zh-CN" ? "模糊" : "Blur"}</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<div className="flex flex-wrap gap-2">{blurPreviews}</div>
@@ -277,7 +319,7 @@ export function BackgroundContent() {
 					sectionKey={`settings:background-${section.id}`}
 				>
 					<SectionHeader>
-						<SectionTitle>{section.title}</SectionTitle>
+						<SectionTitle>{sectionTitles[section.id]}</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<div className="flex flex-wrap gap-2">

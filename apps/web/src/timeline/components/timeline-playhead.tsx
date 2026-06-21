@@ -18,6 +18,7 @@ import {
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
 import { useEditor } from "@/editor/use-editor";
+import { useI18n } from "@/i18n/language-provider";
 import { TIMELINE_SCROLLBAR_SIZE_PX } from "./layout";
 import { TIMELINE_LAYERS } from "./layers";
 
@@ -42,6 +43,7 @@ export function TimelinePlayhead({
 	playheadRef: externalPlayheadRef,
 	isSnappingToPlayhead = false,
 }: TimelinePlayheadProps) {
+	const { locale } = useI18n();
 	const editor = useEditor();
 	const duration = editor.timeline.getTotalDuration();
 	const internalPlayheadRef = useRef<HTMLDivElement>(null);
@@ -107,7 +109,7 @@ export function TimelinePlayhead({
 		<div
 			ref={playheadRef}
 			role="slider"
-			aria-label="Timeline playhead"
+			aria-label={locale === "zh-CN" ? "时间线播放头" : "Timeline playhead"}
 			aria-valuemin={0}
 			aria-valuemax={duration}
 			aria-valuenow={currentTime}
@@ -126,7 +128,7 @@ export function TimelinePlayhead({
 
 			<button
 				type="button"
-				aria-label="Drag playhead"
+				aria-label={locale === "zh-CN" ? "拖动播放头" : "Drag playhead"}
 				className={`pointer-events-auto absolute top-1 left-1/2 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-primary border-primary" : "bg-primary border-primary/50"}`}
 				onMouseDown={handlePlayheadMouseDown}
 			/>

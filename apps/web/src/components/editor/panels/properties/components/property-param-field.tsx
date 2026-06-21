@@ -24,6 +24,7 @@ import {
 import { usePropertyDraft } from "../hooks/use-property-draft";
 import { KeyframeToggle } from "./keyframe-toggle";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/i18n/language-provider";
 
 export function PropertyParamField({
 	param,
@@ -42,6 +43,7 @@ export function PropertyParamField({
 		onToggle: () => void;
 	};
 }) {
+	const { locale } = useI18n();
 	return (
 		<SectionField
 			label={param.label}
@@ -50,7 +52,7 @@ export function PropertyParamField({
 					<KeyframeToggle
 						isActive={keyframe.isActive}
 						isDisabled={keyframe.isDisabled}
-						title={`Toggle ${param.label.toLowerCase()} keyframe`}
+						title={locale === "zh-CN" ? `切换 ${param.label.toLowerCase()} 关键帧` : `Toggle ${param.label.toLowerCase()} keyframe`}
 						onToggle={keyframe.onToggle}
 					/>
 				) : undefined

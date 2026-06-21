@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, X } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useI18n } from "@/i18n/language-provider";
 import { cn } from "@/utils/ui";
 import { Button } from "./button";
 import { forwardRef, type ComponentProps } from "react";
@@ -60,6 +61,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 		},
 		ref,
 	) => {
+		const { copy } = useI18n();
 		const [isFocused, setIsFocused] = useState(false);
 
 		const isPassword = type === "password";
@@ -111,7 +113,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 							onClear?.();
 						}}
 						className="text-muted-foreground absolute top-0 right-0 h-full px-3 !opacity-100"
-						aria-label="Clear input"
+						aria-label={copy.common.clearInput}
 					>
 						<X className="!size-[0.85]" />
 					</Button>
@@ -125,7 +127,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 							"text-muted-foreground hover:text-foreground absolute top-0 h-full px-3",
 							showClear ? "right-10" : "right-0",
 						)}
-						aria-label={showPassword ? "Hide password" : "Show password"}
+						aria-label={
+							showPassword ? copy.common.hidePassword : copy.common.showPassword
+						}
 					>
 						{showPassword ? (
 							<Eye className="size-4" />

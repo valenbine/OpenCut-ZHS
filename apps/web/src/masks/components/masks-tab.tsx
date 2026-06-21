@@ -60,6 +60,7 @@ import {
 	SectionTitle,
 } from "@/components/section";
 import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
+import { useI18n } from "@/i18n/language-provider";
 import {
 	OcMirrorIcon,
 	OcShapesIcon,
@@ -128,6 +129,7 @@ function withPreviewedMaskParam({
 
 export function MasksTab({ element, trackId }: MasksTabProps) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const { renderElement, previewUpdates, commit } =
 		useElementPreview<MaskableElement>({
 			trackId,
@@ -254,7 +256,7 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center justify-between gap-2">
-				<SectionTitle>Masks</SectionTitle>
+				<SectionTitle>{locale === "zh-CN" ? "蒙版" : "Masks"}</SectionTitle>
 				<DropdownMenu
 					open={hasMask ? false : isDropdownOpen}
 					onOpenChange={handleDropdownOpenChange}
@@ -267,20 +269,21 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 										variant="ghost"
 										size="icon"
 										disabled
-										aria-label="Add mask"
+									aria-label={locale === "zh-CN" ? "添加蒙版" : "Add mask"}
 									>
 										<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
 									</Button>
 								</span>
 							</TooltipTrigger>
 							<TooltipContent className="max-w-56 text-balance">
-								Only one mask is supported right now. If you need more,
-								duplicate the clip and apply a different mask to each copy.
+								{locale === "zh-CN"
+									? "当前只支持一个蒙版。如需多个蒙版，请复制片段并分别应用不同蒙版。"
+									: "Only one mask is supported right now. If you need more, duplicate the clip and apply a different mask to each copy."}
 							</TooltipContent>
 						</Tooltip>
 					) : (
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" aria-label="Add mask">
+							<Button variant="ghost" size="icon" aria-label={locale === "zh-CN" ? "添加蒙版" : "Add mask"}>
 								<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
 							</Button>
 						</DropdownMenuTrigger>
@@ -329,8 +332,12 @@ function MaskItem({
 	previewParam,
 	onCommit,
 }: MaskItemProps) {
+	const { locale } = useI18n();
 	const editor = useEditor();
-	const definition = getMaskDefinition(mask.type);
+	const definition = localizeMaskDefinition({
+		definition: getMaskDefinition(mask.type),
+		locale,
+	});
 
 	return (
 		<Section sectionKey={`mask-item:${mask.id}`} showTopBorder={false}>
@@ -340,7 +347,7 @@ function MaskItem({
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={`Toggle ${definition.name} mask inversion`}
+							aria-label={locale === "zh-CN" ? `切换 ${definition.name} 蒙版反相` : `Toggle ${definition.name} mask inversion`}
 							onClick={() =>
 								editor.timeline.toggleMaskInverted({
 									trackId,
@@ -356,7 +363,7 @@ function MaskItem({
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={`Remove ${definition.name} mask`}
+							aria-label={locale === "zh-CN" ? `移除 ${definition.name} 蒙版` : `Remove ${definition.name} mask`}
 							onClick={() =>
 								editor.timeline.removeMask({
 									trackId,
@@ -400,6 +407,7 @@ function MaskParamsFields({
 	previewParam: PreviewParamHandler;
 	onCommit: () => void;
 }) {
+	const { locale } = useI18n();
 	const featherParam = getNumberParamDefinition({
 		definition,
 		key: "feather",
@@ -432,7 +440,7 @@ function MaskParamsFields({
 			{definition.features.hasPosition &&
 				"centerX" in mask.params &&
 				"centerY" in mask.params && (
-					<SectionField label="Position">
+					<SectionField label={locale === "zh-CN" ? "位置" : "Position"}>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -469,7 +477,7 @@ function MaskParamsFields({
 			{definition.features.sizeMode === "width-height" &&
 				"width" in mask.params &&
 				"height" in mask.params && (
-					<SectionField label="Size">
+					<SectionField label={locale === "zh-CN" ? "尺寸" : "Size"}>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -505,7 +513,7 @@ function MaskParamsFields({
 
 			{definition.features.sizeMode === "height-only" &&
 				"height" in mask.params && (
-					<SectionField label="Height">
+					<SectionField label={locale === "zh-CN" ? "高度" : "Height"}>
 						<MaskNumberField
 							icon="H"
 							param={getNumberParamDefinition({
@@ -524,7 +532,7 @@ function MaskParamsFields({
 
 			{definition.features.sizeMode === "width-only" &&
 				"width" in mask.params && (
-					<SectionField label="Width">
+					<SectionField label={locale === "zh-CN" ? "宽度" : "Width"}>
 						<MaskNumberField
 							icon="W"
 							param={getNumberParamDefinition({
@@ -542,7 +550,7 @@ function MaskParamsFields({
 				)}
 
 			{definition.features.sizeMode === "uniform" && "scale" in mask.params && (
-				<SectionField label="Scale">
+				<SectionField label={locale === "zh-CN" ? "缩放" : "Scale"}>
 					<MaskNumberField
 						icon={
 							isTextMask(mask) ? <HugeiconsIcon icon={ArrowExpandIcon} /> : "S"
@@ -562,7 +570,7 @@ function MaskParamsFields({
 			)}
 
 			{definition.features.hasRotation && "rotation" in mask.params && (
-				<SectionField label="Rotation">
+				<SectionField label={locale === "zh-CN" ? "旋转" : "Rotation"}>
 					<MaskNumberField
 						icon={<HugeiconsIcon icon={RotateClockwiseIcon} />}
 						param={getNumberParamDefinition({
@@ -579,7 +587,7 @@ function MaskParamsFields({
 				</SectionField>
 			)}
 
-			<SectionField label="Feather">
+			<SectionField label={locale === "zh-CN" ? "羽化" : "Feather"}>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={FeatherIcon} />}
 					param={featherParam}
@@ -592,7 +600,7 @@ function MaskParamsFields({
 				/>
 			</SectionField>
 
-			<SectionField label="Stroke">
+			<SectionField label={locale === "zh-CN" ? "描边" : "Stroke"}>
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center gap-2">
 						<MaskNumberField
@@ -673,6 +681,7 @@ function TextMaskFields({
 	onCommit: () => void;
 	fontSizeParam: NumberParamDefinition;
 }) {
+	const { locale } = useI18n();
 	const content = usePropertyDraft({
 		displayValue: mask.params.content,
 		parse: (input) => input,
@@ -685,7 +694,7 @@ function TextMaskFields({
 
 	return (
 		<>
-			<SectionField label="Content">
+			<SectionField label={locale === "zh-CN" ? "内容" : "Content"}>
 				<Textarea
 					value={content.displayValue}
 					className="min-h-20"
@@ -694,7 +703,7 @@ function TextMaskFields({
 					onBlur={content.onBlur}
 				/>
 			</SectionField>
-			<SectionField label="Font">
+			<SectionField label={locale === "zh-CN" ? "字体" : "Font"}>
 				<FontPicker
 					defaultValue={mask.params.fontFamily}
 					onValueChange={(value) => {
@@ -703,7 +712,7 @@ function TextMaskFields({
 					}}
 				/>
 			</SectionField>
-			<SectionField label="Size">
+			<SectionField label={locale === "zh-CN" ? "大小" : "Size"}>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={TextFontIcon} />}
 					param={fontSizeParam}
@@ -712,7 +721,7 @@ function TextMaskFields({
 					onCommit={onCommit}
 				/>
 			</SectionField>
-			<SectionField label="Spacing">
+			<SectionField label={locale === "zh-CN" ? "间距" : "Spacing"}>
 				<div className="flex items-start gap-2">
 					<MaskNumberField
 						className="w-1/2"
@@ -835,18 +844,87 @@ function MaskNumberField({
 }
 
 function EmptyView({ onAddMask }: EmptyViewProps) {
+	const { locale } = useI18n();
 	return (
 		<div className="flex flex-col h-full items-center justify-center gap-4 text-center">
 			<OcShapesIcon className="size-10 text-muted-foreground" strokeWidth={1} />
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">No masks</h3>
+				<h3 className="font-medium text-foreground">{locale === "zh-CN" ? "暂无蒙版" : "No masks"}</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-40">
-					Add a mask to hide or reveal parts of this layer.
+					{locale === "zh-CN" ? "添加蒙版以隐藏或显示当前图层的部分区域。" : "Add a mask to hide or reveal parts of this layer."}
 				</p>
 			</div>
 			<Button variant="default" size="sm" onClick={onAddMask}>
-				Add mask
+				{locale === "zh-CN" ? "添加蒙版" : "Add mask"}
 			</Button>
 		</div>
 	);
+}
+function localizeMaskName({ name, locale }: { name: string; locale: string }) {
+	if (locale !== "zh-CN") {
+		return name;
+	}
+
+	return {
+		Ellipse: "椭圆",
+		Rectangle: "矩形",
+		Diamond: "菱形",
+		Heart: "爱心",
+		Star: "星形",
+		Split: "分割",
+		Text: "文本",
+		"Cinematic Bars": "电影黑边",
+		"Pen tool": "钢笔工具",
+	}[name] ?? name;
+}
+
+function localizeMaskLabel({ label, locale }: { label: string; locale: string }) {
+	if (locale !== "zh-CN") {
+		return label;
+	}
+
+	return {
+		Width: "宽度",
+		Height: "高度",
+		Rotation: "旋转",
+		Scale: "缩放",
+		Feather: "羽化",
+		"Stroke width": "描边宽度",
+		"Stroke color": "描边颜色",
+		"Stroke Align": "描边对齐",
+		Size: "大小",
+		"Letter spacing": "字间距",
+		"Line height": "行高",
+		Inside: "内部",
+		Center: "居中",
+		Outside: "外部",
+	}[label] ?? label;
+}
+
+function localizeMaskDefinition({
+	definition,
+	locale,
+}: {
+	definition: RegisteredMaskDefinition;
+	locale: string;
+}): RegisteredMaskDefinition {
+	return {
+		...definition,
+		name: localizeMaskName({ name: definition.name, locale }),
+		params: definition.params.map((param) =>
+			param.type === "select"
+				? {
+					...param,
+					label: localizeMaskLabel({ label: param.label, locale }),
+					options: param.options.map((option) => ({
+						...option,
+						label: localizeMaskLabel({ label: option.label, locale }),
+					})),
+				}
+				: {
+					...param,
+					label: localizeMaskLabel({ label: param.label, locale }),
+				},
+		),
+	};
 }

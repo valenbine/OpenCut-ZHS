@@ -26,6 +26,33 @@ import {
 import { cn } from "@/utils/ui";
 import { Separator } from "@/components/ui/separator";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { useI18n } from "@/i18n/language-provider";
+
+function localizeEffectName({ name, locale }: { name: string; locale: string }) {
+	if (locale !== "zh-CN") {
+		return name;
+	}
+
+	return {
+		Blur: "模糊",
+	}[name] ?? name;
+}
+
+function localizeEffectParamLabel({
+	label,
+	locale,
+}: {
+	label: string;
+	locale: string;
+}) {
+	if (locale !== "zh-CN") {
+		return label;
+	}
+
+	return {
+		Intensity: "强度",
+	}[label] ?? label;
+}
 
 export function StandaloneEffectTab({
 	element,
@@ -34,6 +61,13 @@ export function StandaloneEffectTab({
 	element: EffectElement;
 	trackId: string;
 }) {
+	const { locale } = useI18n();
+	const localizedEffect = {
+		...effect,
+		type: effect.type,
+		params: effect.params,
+		name: localizeEffectName({ name: effect.type === "blur" ? "Blur" : effect.type, locale }),
+	};
 	const { renderElement, previewUpdates, commit } = useElementPreview({
 		trackId,
 		elementId: element.id,
@@ -56,10 +90,10 @@ export function StandaloneEffectTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Effect</SectionTitle>
+				<SectionTitle>{locale === "zh-CN" ? "特效" : "Effect"}</SectionTitle>
 			</div>
 			<EffectSection
-				effect={effect}
+				effect={localizedEffect}
 				renderParams={(renderElement as EffectElement).params}
 				previewParam={previewParam}
 				onCommit={commit}
@@ -75,6 +109,7 @@ export function ClipEffectsTab({
 	element: VisualElement;
 	trackId: string;
 }) {
+	const { locale } = useI18n();
 	const [dragIndex, setDragIndex] = useState<number | null>(null);
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
 	const editor = useEditor();
@@ -143,7 +178,7 @@ export function ClipEffectsTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Effects</SectionTitle>
+				<SectionTitle>{locale === "zh-CN" ? "特效" : "Effects"}</SectionTitle>
 			</div>
 			{effects.length === 0 ? (
 				<EmptyView />
@@ -174,9 +209,9 @@ export function ClipEffectsTab({
 									showBottomDropIndicator && "border-b-2 border-primary",
 								)}
 							>
-								<EffectSection
-									effect={effect}
-									renderParams={getRenderParams({ effectId: effect.id })}
+							<EffectSection
+								effect={effect}
+								renderParams={getRenderParams({ effectId: effect.id })}
 									previewParam={buildPreviewParam(effect.id)}
 									onCommit={commit}
 									onToggle={() =>
@@ -205,6 +240,7 @@ export function ClipEffectsTab({
 
 function EmptyView() {
 	const setActiveTab = useAssetsPanelStore((s) => s.setActiveTab);
+	const { locale } = useI18n();
 
 	return (
 		<div className="flex flex-col h-full items-center justify-center gap-4 text-center">
@@ -214,9 +250,9 @@ function EmptyView() {
 				strokeWidth={1}
 			/>
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">No effects</h3>
+				<h3 className="font-medium text-foreground">{locale === "zh-CN" ? "暂无特效" : "No effects"}</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-44">
-					Add effects to this layer from the Assets panel.
+					{locale === "zh-CN" ? "到素材面板为当前图层添加特效。" : "Add effects to this layer from the Assets panel."}
 				</p>
 			</div>
 			<Button
@@ -224,7 +260,7 @@ function EmptyView() {
 				size="sm"
 				onClick={() => setActiveTab("effects")}
 			>
-				Open effects
+				{locale === "zh-CN" ? "打开特效" : "Open effects"}
 			</Button>
 		</div>
 	);
@@ -245,7 +281,13 @@ function EffectSection({
 	onToggle?: () => void;
 	onRemove?: () => void;
 }) {
+	const { locale } = useI18n();
 	const definition = effectsRegistry.get(effect.type);
+	const localizedName = localizeEffectName({ name: definition.name, locale });
+	const localizedParams = definition.params.map((param) => ({
+		...param,
+		label: localizeEffectParamLabel({ label: param.label, locale }),
+	}));
 
 	return (
 		<Section
@@ -260,7 +302,7 @@ function EffectSection({
 							<Button
 								variant={effect.enabled ? "secondary" : "ghost"}
 								size="icon"
-								aria-label={`Toggle ${definition.name}`}
+								aria-label={locale === "zh-CN" ? `切换 ${localizedName}` : `Toggle ${localizedName}`}
 								onClick={onToggle}
 							>
 								<HugeiconsIcon
@@ -270,7 +312,7 @@ function EffectSection({
 							<Button
 								variant="ghost"
 								size="icon"
-								aria-label={`Remove ${definition.name}`}
+								aria-label={locale === "zh-CN" ? `移除 ${localizedName}` : `Remove ${localizedName}`}
 								onClick={onRemove}
 							>
 								<HugeiconsIcon icon={Delete02Icon} />
@@ -282,14 +324,14 @@ function EffectSection({
 				<SectionTitle
 					className={cn(onToggle && !effect.enabled && "text-muted-foreground")}
 				>
-					{definition.name}
+					{localizedName}
 				</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn("p-0", onToggle && !effect.enabled && "opacity-50")}
 			>
 				<SectionFields>
-					{definition.params.map((param) => (
+					{localizedParams.map((param) => (
 						<div key={param.key} className="flex flex-col gap-3.5">
 							<div className="px-4">
 								<PropertyParamField

@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { uppercase } from "@/utils/string";
 import { clamp, formatNumberForDisplay } from "@/utils/math";
 import { timelineTimeToPixels, timelineTimeToSnappedPixels } from "@/timeline";
+import { useI18n } from "@/i18n/language-provider";
 import {
 	type MediaTime,
 	mediaTimeFromSeconds,
@@ -79,6 +80,7 @@ export function TimelineBookmarksRow({
 	handleRulerTrackingMouseDown,
 	handleRulerMouseDown,
 }: TimelineBookmarksRowProps) {
+	const { locale } = useI18n();
 	const bookmarks = useEditor((e) => e.scenes.getActiveScene().bookmarks);
 
 	return (
@@ -92,15 +94,17 @@ export function TimelineBookmarksRow({
 					height: TIMELINE_BOOKMARK_ROW_HEIGHT_PX,
 					width: `${dynamicTimelineWidth}px`,
 				}}
-				aria-label="Timeline ruler"
+				aria-label={locale === "zh-CN" ? "时间线标尺" : "Timeline ruler"}
 				type="button"
 				onWheel={handleWheel}
 				onClick={(event) => {
-					if (!event.currentTarget.contains(event.target as Node)) return;
+					if (!(event.target instanceof Node)) return;
+					if (!event.currentTarget.contains(event.target)) return;
 					handleTimelineContentClick(event);
 				}}
 				onMouseDown={(event) => {
-					if (!event.currentTarget.contains(event.target as Node)) return;
+					if (!(event.target instanceof Node)) return;
+					if (!event.currentTarget.contains(event.target)) return;
 					handleRulerMouseDown(event);
 					handleRulerTrackingMouseDown(event);
 				}}
@@ -134,6 +138,7 @@ function TimelineBookmark({
 	}) => void;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const duration = editor.timeline.getTotalDuration();
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -189,7 +194,7 @@ function TimelineBookmark({
 						left: `${bookmarkLeft}px`,
 						width: `${bookmarkWidth}px`,
 					}}
-					aria-label={`Bookmark at ${formatNumberForDisplay({ value: mediaTimeToSeconds({ time }), fractionDigits: 1 })}s`}
+					aria-label={locale === "zh-CN" ? `${formatNumberForDisplay({ value: mediaTimeToSeconds({ time }), fractionDigits: 1 })} 秒处的书签` : `Bookmark at ${formatNumberForDisplay({ value: mediaTimeToSeconds({ time }), fractionDigits: 1 })}s`}
 					type="button"
 					onMouseDown={handleMouseDown}
 					onClick={handleClick}
@@ -298,6 +303,7 @@ function BookmarkPopoverContent({
 	onPopoverClose: () => void;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const [draftColorHex, setDraftColorHex] = useState(
 		(bookmark.color ?? DEFAULT_TIMELINE_BOOKMARK_COLOR)
 			.replace("#", "")
@@ -305,11 +311,15 @@ function BookmarkPopoverContent({
 	);
 
 	useEffect(() => {
-		setDraftColorHex(
-			(bookmark.color ?? DEFAULT_TIMELINE_BOOKMARK_COLOR)
-				.replace("#", "")
-				.toUpperCase(),
-		);
+		const frameId = requestAnimationFrame(() => {
+			setDraftColorHex(
+				(bookmark.color ?? DEFAULT_TIMELINE_BOOKMARK_COLOR)
+					.replace("#", "")
+					.toUpperCase(),
+			);
+		});
+
+		return () => cancelAnimationFrame(frameId);
 	}, [bookmark.color]);
 
 	const handleRemove = () => {
@@ -349,16 +359,16 @@ function BookmarkPopoverContent({
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Note</Label>
+				<Label className="text-xs">{locale === "zh-CN" ? "备注" : "Note"}</Label>
 				<Input
-					placeholder="Add a note..."
+					placeholder={locale === "zh-CN" ? "添加备注..." : "Add a note..."}
 					value={bookmark.note ?? ""}
 					onChange={(event) => handleUpdate({ note: event.target.value })}
 					className="h-8 text-sm"
 				/>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Color</Label>
+				<Label className="text-xs">{locale === "zh-CN" ? "颜色" : "Color"}</Label>
 				<div className="relative">
 					<ColorPicker
 						value={uppercase({ string: draftColorHex })}
@@ -378,7 +388,7 @@ function BookmarkPopoverContent({
 								type="button"
 								variant="text"
 								size="text"
-								aria-label="Reset to default color"
+								aria-label={locale === "zh-CN" ? "重置为默认颜色" : "Reset to default color"}
 								className="absolute top-1/2 right-1 -translate-y-1/2 mr-1"
 								onClick={() =>
 									editor.scenes.updateBookmark({
@@ -396,7 +406,7 @@ function BookmarkPopoverContent({
 				</div>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Duration</Label>
+				<Label className="text-xs">{locale === "zh-CN" ? "时长" : "Duration"}</Label>
 				<div className="flex items-center gap-1.5">
 					<Input
 						type="number"
@@ -432,10 +442,10 @@ function BookmarkPopoverContent({
 						handleRemove();
 					}
 				}}
-				aria-label="delete bookmark"
+				aria-label={locale === "zh-CN" ? "删除书签" : "Delete bookmark"}
 			>
 				<HugeiconsIcon icon={Delete02Icon} className="!size-3.5" />
-				Delete
+				{locale === "zh-CN" ? "删除" : "Delete"}
 			</Button>
 		</>
 	);

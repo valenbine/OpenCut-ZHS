@@ -20,6 +20,7 @@ import {
 } from "@/components/section";
 import { PropertyParamField } from "@/components/editor/panels/properties/components/property-param-field";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/language-provider";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/utils/ui";
@@ -91,6 +92,7 @@ function StrokeSection({
 	trackId: string;
 }) {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const definition = graphicsRegistry.get(element.definitionId);
 	const { localTime, isPlayheadWithinElementRange } = useElementPlayhead({
 		startTime: element.startTime,
@@ -166,7 +168,7 @@ function StrokeSection({
 					</Button>
 				}
 			>
-				<SectionTitle>Stroke</SectionTitle>
+				<SectionTitle>{locale === "zh-CN" ? "描边" : "Stroke"}</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn(!isStrokeEnabled && "pointer-events-none opacity-50")}

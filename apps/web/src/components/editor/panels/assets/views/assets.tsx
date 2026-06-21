@@ -58,9 +58,11 @@ import {
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { useI18n } from "@/i18n/language-provider";
 
 export function MediaView() {
 	const editor = useEditor();
+	const { locale } = useI18n();
 	const mediaFiles = useEditor((e) => e.media.getAssets());
 	const activeProject = useEditor((e) => e.project.getActive());
 
@@ -76,11 +78,67 @@ export function MediaView() {
 
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [progress, setProgress] = useState(0);
+	const copy = {
+		"zh-CN": {
+			noActiveProject: "当前没有活动项目",
+			title: "素材",
+			ariaLabel: "素材",
+			exportClips: "导出片段",
+			delete: "删除",
+			deleteItems: ({ count }: { count: number }) => `删除 ${count} 项`,
+			video: "视频",
+			audio: "音频",
+			unknown: "未知",
+			switchToList: "切换到列表视图",
+			switchToGrid: "切换到网格视图",
+			sortName: "名称",
+			sortType: "类型",
+			sortDuration: "时长",
+			sortFileSize: "文件大小",
+			sortBy: ({
+				sortBy,
+				sortOrder,
+			}: {
+				sortBy: MediaSortKey;
+				sortOrder: MediaSortOrder;
+			}) =>
+				`按${sortBy === "name" ? "名称" : sortBy === "type" ? "类型" : sortBy === "duration" ? "时长" : "文件大小"}排序（${sortOrder === "asc" ? "升序" : "降序"}）`,
+			import: "导入",
+			addToTimeline: "添加到时间线或拖动到指定位置",
+		},
+		en: {
+			noActiveProject: "No active project",
+			title: "Assets",
+			ariaLabel: "Assets",
+			exportClips: "Export clips",
+			delete: "Delete",
+			deleteItems: ({ count }: { count: number }) => `Delete ${count} items`,
+			video: "Video",
+			audio: "Audio",
+			unknown: "Unknown",
+			switchToList: "Switch to list view",
+			switchToGrid: "Switch to grid view",
+			sortName: "Name",
+			sortType: "Type",
+			sortDuration: "Duration",
+			sortFileSize: "File size",
+			sortBy: ({
+				sortBy,
+				sortOrder,
+			}: {
+				sortBy: MediaSortKey;
+				sortOrder: MediaSortOrder;
+			}) =>
+				`Sort by ${sortBy} (${sortOrder === "asc" ? "ascending" : "descending"})`,
+			import: "Import",
+			addToTimeline: "Add to timeline or drag to position",
+		},
+	}[locale];
 
 	const processFiles = async ({ files }: { files: File[] }) => {
 		if (!files || files.length === 0) return;
 		if (!activeProject) {
-			toast.error("No active project");
+			toast.error(copy.noActiveProject);
 			return;
 		}
 
@@ -192,7 +250,7 @@ export function MediaView() {
 			<input {...fileInputProps} />
 
 			<PanelView
-				title="Assets"
+				title={copy.title}
 				actions={
 					<MediaActions
 						mediaViewMode={mediaViewMode}
@@ -217,7 +275,7 @@ export function MediaView() {
 					/>
 				) : (
 					<SelectableSurface
-						ariaLabel="Assets"
+						ariaLabel={copy.ariaLabel}
 						orderedIds={orderedMediaIds}
 						revealId={highlightMediaId}
 						onRevealComplete={clearHighlight}
@@ -281,6 +339,7 @@ function MediaAssetDraggable({
 		<DraggableItem
 			name={item.name}
 			preview={preview}
+			addToTimelineLabel={copy.addToTimeline}
 			dragData={{
 				id: item.id,
 				type: "media",
@@ -315,16 +374,29 @@ function MediaItemWithContextMenu({
 		ids: string[];
 	}) => void;
 }) {
+	const { locale } = useI18n();
 	const { isSelected, selectedIds } = useSelection();
 	const idsToDelete = isSelected(item.id) ? selectedIds : [item.id];
-	const deleteLabel =
-		idsToDelete.length > 1 ? `Delete ${idsToDelete.length} items` : "Delete";
+	const copy = locale === "zh-CN"
+		? {
+			exportClips: "导出片段",
+			delete: "删除",
+			deleteItems: ({ count }: { count: number }) => `删除 ${count} 项`,
+		}
+		: {
+			exportClips: "Export clips",
+			delete: "Delete",
+			deleteItems: ({ count }: { count: number }) => `Delete ${count} items`,
+		};
+	const deleteLabel = idsToDelete.length > 1
+		? copy.deleteItems({ count: idsToDelete.length })
+		: copy.delete;
 
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
-				<ContextMenuItem>Export clips</ContextMenuItem>
+				<ContextMenuItem>{copy.exportClips}</ContextMenuItem>
 				<ContextMenuItem
 					variant="destructive"
 					onClick={(event: React.MouseEvent<HTMLDivElement>) =>
@@ -441,6 +513,7 @@ function MediaPreview({
 	item: MediaAsset;
 	variant?: "grid" | "compact";
 }) {
+	const { locale } = useI18n();
 	const shouldShowDurationBadge = variant === "grid";
 
 	if (item.type === "image") {
@@ -482,7 +555,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={Video01Icon}
-				label="Video"
+				label={locale === "zh-CN" ? "视频" : "Video"}
 				duration={item.duration}
 				variant="muted"
 			/>
@@ -493,7 +566,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={MusicNote03Icon}
-				label="Audio"
+				label={locale === "zh-CN" ? "音频" : "Audio"}
 				duration={item.duration}
 				variant="bordered"
 			/>
@@ -501,7 +574,7 @@ function MediaPreview({
 	}
 
 	return (
-		<MediaTypePlaceholder icon={Image02Icon} label="Unknown" variant="muted" />
+		<MediaTypePlaceholder icon={Image02Icon} label={locale === "zh-CN" ? "未知" : "Unknown"} variant="muted" />
 	);
 }
 
@@ -522,6 +595,43 @@ function MediaActions({
 	onSort: ({ key }: { key: MediaSortKey }) => void;
 	onImport: () => void;
 }) {
+	const { locale } = useI18n();
+	const copy = locale === "zh-CN"
+		? {
+			switchToList: "切换到列表视图",
+			switchToGrid: "切换到网格视图",
+			sortName: "名称",
+			sortType: "类型",
+			sortDuration: "时长",
+			sortFileSize: "文件大小",
+			sortBy: ({
+				sortBy,
+				sortOrder,
+			}: {
+				sortBy: MediaSortKey;
+				sortOrder: MediaSortOrder;
+			}) =>
+				`按${sortBy === "name" ? "名称" : sortBy === "type" ? "类型" : sortBy === "duration" ? "时长" : "文件大小"}排序（${sortOrder === "asc" ? "升序" : "降序"}）`,
+			import: "导入",
+		}
+		: {
+			switchToList: "Switch to list view",
+			switchToGrid: "Switch to grid view",
+			sortName: "Name",
+			sortType: "Type",
+			sortDuration: "Duration",
+			sortFileSize: "File size",
+			sortBy: ({
+				sortBy,
+				sortOrder,
+			}: {
+				sortBy: MediaSortKey;
+				sortOrder: MediaSortOrder;
+			}) =>
+				`Sort by ${sortBy} (${sortOrder === "asc" ? "ascending" : "descending"})`,
+			import: "Import",
+		};
+
 	return (
 		<div className="flex gap-1.5">
 			<TooltipProvider>
@@ -545,9 +655,7 @@ function MediaActions({
 					</TooltipTrigger>
 					<TooltipContent>
 						<p>
-							{mediaViewMode === "grid"
-								? "Switch to list view"
-								: "Switch to grid view"}
+							{mediaViewMode === "grid" ? copy.switchToList : copy.switchToGrid}
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -567,28 +675,28 @@ function MediaActions({
 						</TooltipTrigger>
 						<DropdownMenuContent align="end">
 							<SortMenuItem
-								label="Name"
+								label={copy.sortName}
 								sortKey="name"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Type"
+								label={copy.sortType}
 								sortKey="type"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Duration"
+								label={copy.sortDuration}
 								sortKey="duration"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="File size"
+								label={copy.sortFileSize}
 								sortKey="size"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
@@ -597,10 +705,7 @@ function MediaActions({
 						</DropdownMenuContent>
 					</DropdownMenu>
 					<TooltipContent>
-						<p>
-							Sort by {sortBy} (
-							{sortOrder === "asc" ? "ascending" : "descending"})
-						</p>
+						<p>{copy.sortBy({ sortBy, sortOrder })}</p>
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
@@ -612,7 +717,7 @@ function MediaActions({
 				className="items-center justify-center gap-1.5"
 			>
 				<HugeiconsIcon icon={CloudUploadIcon} />
-				Import
+				{copy.import}
 			</Button>
 		</div>
 	);
