@@ -46,11 +46,11 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
   <img alt="Powered by fal.ai" src="https://img.shields.io/badge/Powered%20by-fal.ai-000000?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCAxMEwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDEwTDEwLjkxIDguMjZMMTIgMloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
 </a>
 
-## Why?
+## Why? | 为什么做这个项目
 
-- **Privacy**: Your videos stay on your device
-- **Free features**: Most basic CapCut features are now paywalled 
-- **Simple**: People want editors that are easy to use - CapCut proved that
+- **Privacy / 隐私优先**: Your videos stay on your device. Your media stays local during editing.
+- **Free core features / 核心功能免费可用**: Most basic CapCut features are now paywalled, while a lightweight editor still covers common editing needs.
+- **Simple workflow / 简单易上手**: People want editors that are easy to use, and a familiar workflow lowers the learning curve.
 
 ## Project Structure
 
@@ -59,20 +59,26 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
 - `rust/`: Platform-agnostic core: GPU compositor, effects, masks, and WASM bindings. We're actively migrating business logic here from TypeScript.
 - `docs/`: Architecture and subsystem documentation
 
-## Getting Started
+## Getting Started | 快速开始
 
-### Prerequisites
+This section keeps the setup commands in their original form and adds bilingual guidance around them.
+
+本节保留原始安装命令，并在命令前后补充双语说明，便于直接复制执行。
+
+### Prerequisites | 前置依赖
 
 - [Bun](https://bun.sh/docs/installation)
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
-> **Note:** Docker is optional but recommended for running the local database and Redis. If you only want to work on frontend features, you can skip it.
+> **Note | 说明：** Docker is optional but recommended for running the local database and Redis. If you only want to work on frontend features, you can skip it.
 
-### Setup
+### Setup | 安装步骤
 
-1. Fork and clone the repository
+1. Fork and clone the repository.
+2. Fork 并克隆仓库。
 
-2. Copy the environment file:
+3. Copy the environment file.
+4. 复制环境变量文件。
 
    ```bash
    # Unix/Linux/Mac
@@ -82,13 +88,15 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
    Copy-Item apps/web/.env.example apps/web/.env.local
    ```
 
-3. Start the database and Redis:
+5. Start the database and Redis.
+6. 启动数据库和 Redis。
 
    ```bash
    docker compose up -d db redis serverless-redis-http
    ```
 
-4. Install dependencies and start the dev server:
+7. Install dependencies and start the dev server.
+8. 安装依赖并启动开发服务器。
 
    ```bash
    bun install
@@ -97,19 +105,31 @@ Thanks to [Vercel](https://vercel.com?utm_source=github-opencut&utm_campaign=oss
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-The `.env.example` has sensible defaults that match the Docker Compose config — it should work out of the box.
+应用启动后可通过 [http://localhost:3000](http://localhost:3000) 访问。
 
-### Desktop setup
+The `.env.example` defaults match the Docker Compose config and should work out of the box.
 
-Desktop is opt-in. If you're only working on the web app, skip this entirely.
+`.env.example` 中的默认值已经与 Docker Compose 配置对齐，通常可直接运行。
 
-If you want to get ready for `apps/desktop`, see [`apps/desktop/README.md`](apps/desktop/README.md). It's a two-step setup: Rust toolchain first, then desktop native dependencies.
+### Desktop Setup | 桌面端准备
 
-### Local WASM development
+Desktop support is optional. Web-only contributors can skip this section.
 
-Only needed if you're editing `rust/wasm` and want the web app to use your local build instead of the published package.
+桌面端环境属于可选内容，只开发 Web 端时可以直接跳过。
 
-**Prerequisites** — install these once before anything else:
+If you want to prepare `apps/desktop`, see [`apps/desktop/README.md`](apps/desktop/README.md). The setup has two stages: Rust toolchain first, then native desktop dependencies.
+
+如果你要准备 `apps/desktop`，请查看 [`apps/desktop/README.md`](apps/desktop/README.md)。整体流程分两步：先安装 Rust 工具链，再安装桌面端原生依赖。
+
+### Local WASM Development | 本地 WASM 开发
+
+This section is only needed when editing `rust/wasm` and forcing the web app to use your local build instead of the published package.
+
+只有在修改 `rust/wasm`，并且希望 Web 端使用本地构建产物时，才需要执行这部分内容。
+
+**Prerequisites | 前置依赖** — install these once before anything else.
+
+**前置依赖**：以下工具只需要预先安装一次。
 
 ```bash
 # Rust toolchain
@@ -122,42 +142,50 @@ cargo install wasm-pack
 cargo install cargo-watch
 ```
 
-1. Build the package once from the repo root:
+1. Build the package once from the repo root.
+2. 在仓库根目录先构建一次包。
 
    ```bash
    bun run build:wasm
    ```
 
-2. Register the generated package for linking:
+3. Register the generated package for linking.
+4. 注册生成后的本地包，供链接使用。
 
    ```bash
    cd rust/wasm/pkg
    bun link
    ```
 
-3. Link `apps/web` to the local package:
+5. Link `apps/web` to the local package.
+6. 让 `apps/web` 链接到本地包。
 
    ```bash
    cd apps/web
    bun link opencut-wasm
    ```
 
-4. Rebuild on changes while you work:
+7. Rebuild on changes while you work.
+8. 开发过程中在文件变更时自动重建。
 
    ```bash
    bun dev:wasm
    ```
 
-To switch `apps/web` back to the published package, run:
+To switch `apps/web` back to the published package, run the command below.
+
+如果你需要让 `apps/web` 切回已发布版本，请执行下面的命令。
 
 ```bash
 cd apps/web
 bun add opencut-wasm
 ```
 
-### Self-Hosting with Docker
+### Self-Hosting with Docker | 使用 Docker 自托管
 
-To run everything (including a production build of the app) in Docker:
+To run everything, including a production build of the app, in Docker:
+
+如果你希望通过 Docker 运行完整服务，并包含应用的生产构建，请执行：
 
 ```bash
 docker compose up -d
@@ -165,22 +193,52 @@ docker compose up -d
 
 The app will be available at [http://localhost:3100](http://localhost:3100).
 
-## Contributing
+应用会在 [http://localhost:3100](http://localhost:3100) 提供访问。
 
-We welcome contributions! While we're actively developing and refactoring certain areas, there are plenty of opportunities to contribute effectively.
+## Contributing | 贡献方式
 
-**🎯 Focus areas:** Timeline functionality, project management, performance, bug fixes, and UI improvements outside the preview panel.
+We welcome contributions. The project is still evolving, and several areas are a good fit for focused improvements.
 
-**⚠️ Avoid for now:** Preview panel enhancements (fonts, stickers, effects) and export functionality - we're refactoring these with a new binary rendering approach.
+欢迎贡献代码和文档。项目仍在持续演进，当前有不少适合集中投入的改进方向。
 
-See our [Contributing Guide](.github/CONTRIBUTING.md) for detailed setup instructions, development guidelines, and complete focus area guidance.
+**Recommended focus areas | 推荐优先方向**
 
-**Quick start for contributors:**
+- Timeline functionality and editing interactions
+- Project management flows
+- Performance improvements
+- Bug fixes
+- UI improvements outside the preview panel
+- 时间线功能与编辑交互
+- 项目管理流程
+- 性能优化
+- Bug 修复
+- 预览面板之外的 UI 改进
+
+**Current caution areas | 当前谨慎修改区域**
+
+- Preview panel enhancements such as fonts, stickers, and effects
+- Export-related functionality
+- 预览面板增强功能，例如字体、贴纸、特效
+- 导出相关功能
+
+These parts are being reworked around a newer binary rendering approach, so changes there benefit from extra coordination.
+
+这些部分正围绕新的二进制渲染方案进行重构，相关改动更适合先协调再推进。
+
+See the [Contributing Guide](.github/CONTRIBUTING.md) for detailed setup instructions, development guidelines, and a fuller description of the current focus areas.
+
+更详细的环境准备、开发约定和当前重点方向，请查看 [Contributing Guide](.github/CONTRIBUTING.md)。
+
+**Quick start for contributors | 贡献者快速开始**
 
 - Fork the repo and clone locally
-- Follow the setup instructions in CONTRIBUTING.md
-- Working on `apps/desktop`? See [`apps/desktop/README.md`](apps/desktop/README.md) for setup
+- Follow the setup instructions in `CONTRIBUTING.md`
+- If you work on `apps/desktop`, read [`apps/desktop/README.md`](apps/desktop/README.md)
 - Create a feature branch and submit a PR
+- Fork 仓库并克隆到本地
+- 按 `CONTRIBUTING.md` 完成环境准备
+- 如果你要修改 `apps/desktop`，请先阅读 [`apps/desktop/README.md`](apps/desktop/README.md)
+- 创建功能分支并提交 PR
 
 ## License
 
