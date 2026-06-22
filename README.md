@@ -21,6 +21,8 @@ This repository continues from the original [OpenCut-app/OpenCut-classic](https:
 
 The upstream rewrite is happening at [opencut-app/opencut](https://github.com/opencut-app/opencut).
 
+Contributors shown by GitHub may include authors from the original archived repository history.
+
 ## Current Status
 
 - Suitable for local preview, demos, and continued iteration with a Chinese UI

@@ -23,6 +23,8 @@ OpenCut-ZHS 是一个面向中文用户的 OpenCut Classic 维护分支，提供
 
 上游重写版本位于 [opencut-app/opencut](https://github.com/opencut-app/opencut)。
 
+GitHub 展示的 Contributors 可能包含原始归档仓库历史提交中的作者。
+
 ## 当前状态
 
 - 适合用于中文界面的本地预览、演示和继续迭代
