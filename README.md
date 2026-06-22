@@ -4,6 +4,10 @@
 
 OpenCut-ZHS is a Chinese-focused maintenance fork of OpenCut Classic with Simplified Chinese as the default UI, ongoing localization for the website and editor, and baseline Web regression coverage.
 
+## Preview
+
+![OpenCut-ZHS preview](./apps/web/public/landing-page-dark.png)
+
 ## Positioning
 
 - Simplified Chinese is the default language, with priority on Chinese-first usability

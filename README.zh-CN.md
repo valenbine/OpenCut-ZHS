@@ -6,6 +6,10 @@
 
 OpenCut-ZHS 是一个面向中文用户的 OpenCut Classic 维护分支，提供默认简体中文界面、持续补齐的站点与编辑器汉化，以及基础可回归的 Web 端测试。
 
+## 预览截图
+
+![OpenCut-ZHS 预览截图](./apps/web/public/landing-page-dark.png)
+
 ## 项目定位
 
 - 默认语言为简体中文，优先优化中文用户的上手体验
